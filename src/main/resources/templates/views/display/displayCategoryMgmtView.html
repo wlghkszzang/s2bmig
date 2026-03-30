@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layout/default}">
+
+<head>
+    <title>전시 카테고리 관리</title>
+    <th:block layout:fragment="head">
+        <link rel="stylesheet" th:href="@{/js/AUIGrid/AUIGrid_style.css}">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/zTree.v3/3.5.40/css/zTreeStyle/zTreeStyle.min.css">
+        <style>
+            :root {
+                --primary-color: #6366f1;
+                --primary-hover: #4f46e5;
+                --bg-color: #0f172a;
+                --card-bg: #1e293b;
+                --border-color: #334155;
+                --text-main: #f8fafc;
+                --text-muted: #94a3b8;
+                --header-bg: #1e293b;
+                --accent-color: #818cf8;
+            }
+
+            body {
+                background-color: var(--bg-color);
+                color: var(--text-main);
+                font-family: 'Inter', 'Outfit', sans-serif;
+                overflow-x: hidden;
+            }
+
+            .page-header {
+                margin-bottom: 2rem;
+                padding-bottom: 1rem;
+                border-bottom: 1px solid var(--border-color);
+            }
+
+            .page-header h1 {
+                font-size: 1.75rem;
+                font-weight: 800;
+                background: linear-gradient(to right, #818cf8, #c084fc);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                margin: 0;
+            }
+
+            .content-container {
+                display: flex;
+                gap: 1.5rem;
+                min-height: 850px;
+            }
+
+            /* Tree Panel */
+            .tree-panel {
+                width: 350px;
+                min-width: 350px;
+                background: var(--card-bg);
+                border: 1px solid var(--border-color);
+                border-radius: 16px;
+                display: flex;
+                flex-direction: column;
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+                overflow: hidden;
+                height: 850px;
+            }
+
+            .panel-header {
+                padding: 1.25rem;
+                background: rgba(255, 255, 255, 0.03);
+                border-bottom: 1px solid var(--border-color);
+            }
+
+            .panel-header h3 {
+                margin: 0;
+                font-size: 1rem;
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+            }
+
+            .tree-options {
+                padding: 1rem;
+                display: flex;
+                gap: 0.5rem;
+                border-bottom: 1px solid var(--border-color);
+                background: rgba(0, 0, 0, 0.2);
+            }
+
+            .form-control {
+                background: #0f172a;
+                border: 1px solid var(--border-color);
+                color: var(--text-main);
+                border-radius: 8px;
+                padding: 0.5rem;
+                font-size: 0.875rem;
+                outline: none;
+                transition: all 0.2s;
+            }
+
+            .form-control:focus {
+                border-color: var(--primary-color);
+                box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+            }
+
+            .ztree-wrap {
+                flex: 1;
+                overflow: auto;
+                padding: 0.5rem;
+            }
+
+            /* Main Content Panel */
+            .main-content {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                gap: 1.5rem;
+                min-width: 0;
+                height: 850px;
+                overflow-y: auto;
+                padding-right: 0.5rem;
+            }
+
+            .section-card {
+                background: var(--card-bg);
+                border: 1px solid var(--border-color);
+                border-radius: 16px;
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+                overflow: hidden;
+            }
+
+            .card-header {
+                padding: 1rem 1.25rem;
+                background: rgba(255, 255, 255, 0.03);
+                border-bottom: 1px solid var(--border-color);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .card-header h3 {
+                margin: 0;
+                font-size: 1rem;
+                font-weight: 600;
+                color: var(--accent-color);
+            }
+
+            .card-body {
+                padding: 1.25rem;
+            }
+
+            /* Data Table Styles */
+            .data-table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            .data-table th {
+                width: 15%;
+                background: rgba(0, 0, 0, 0.2);
+                padding: 0.75rem 1rem;
+                text-align: left;
+                font-size: 0.8125rem;
+                color: var(--text-muted);
+                border: 1px solid var(--border-color);
+            }
+
+            .data-table td {
+                padding: 0.5rem 1rem;
+                border: 1px solid var(--border-color);
+                font-size: 0.875rem;
+            }
+
+            .form-input {
+                background: #0f172a;
+                border: 1px solid var(--border-color);
+                color: var(--text-main);
+                border-radius: 6px;
+                padding: 0.5rem 0.75rem;
+                width: 100%;
+                box-sizing: border-box;
+                font-size: 0.875rem;
+            }
+
+            .form-input:read-only {
+                opacity: 0.6;
+                cursor: not-allowed;
+            }
+
+            .btn {
+                padding: 0.5rem 1rem;
+                border-radius: 8px;
+                font-size: 0.8125rem;
+                font-weight: 600;
+                cursor: pointer;
+                border: 1px solid transparent;
+                transition: all 0.2s;
+            }
+
+            .btn-primary {
+                background: var(--primary-color);
+                color: #fff;
+            }
+
+            .btn-primary:hover {
+                background: var(--primary-hover);
+                transform: translateY(-1px);
+            }
+
+            .btn-secondary {
+                background: #334155;
+                color: #fff;
+                border-color: #475569;
+            }
+
+            .btn-secondary:hover {
+                background: #475569;
+            }
+
+            /* Loader Styling */
+            .loader-overlay {
+                position: absolute;
+                inset: 0;
+                background: rgba(15, 23, 42, 0.7);
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                z-index: 50;
+            }
+
+            .spinner {
+                width: 3rem;
+                height: 3rem;
+                border: 4px solid #334155;
+                border-top-color: var(--primary-color);
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+            }
+
+            @keyframes spin {
+                to { transform: rotate(360deg); }
+            }
+
+            /* AUIGrid Overrides for Dark Mode */
+            .aui-grid {
+                border-radius: 8px;
+                overflow: hidden;
+            }
+        </style>
+    </th:block>
+</head>
+
+<body>
+    <div layout:fragment="content">
+        <div class="page-header">
+            <h1>전시 카테고리 관리 ⚡</h1>
+            <p style="color: var(--text-muted); margin-top: 0.5rem;">몰과 연동된 계층별 전시 분류 체계를 구성하고 상품을 매핑합니다.</p>
+        </div>
+
+        <div class="content-container">
+            <!-- Left Tree Area -->
+            <div class="tree-panel">
+                <div class="panel-header">
+                    <h3>전시 카테고리 트리</h3>
+                </div>
+                <div class="tree-options">
+                    <select id="tree_siteNo" class="form-control" style="width: 40%;">
+                        <option th:each="site : ${siteList}" th:value="${site.siteNo}" th:text="${site.siteNm}"></option>
+                    </select>
+                    <select id="tree_mallTypeCd" class="form-control" style="width: 30%;">
+                        <!-- Dynamic Loading -->
+                    </select>
+                    <select id="tree_useYn" class="form-control" style="width: 30%;">
+                        <option value="">전체</option>
+                        <option value="Y" selected>사용</option>
+                        <option value="N">미사용</option>
+                    </select>
+                </div>
+                <div class="ztree-wrap" style="position: relative;">
+                    <div id="treeLoader" class="loader-overlay" style="display: none;">
+                        <div class="spinner"></div>
+                        <p style="margin-top: 1rem; font-size: 0.875rem;">조회 중...</p>
+                    </div>
+                    <ul id="categoryTree" class="ztree"></ul>
+                </div>
+            </div>
+
+            <!-- Main Content Area -->
+            <div class="main-content">
+                <!-- A: Category Basic Info -->
+                <div class="section-card">
+                    <div class="card-header">
+                        <h3>카테고리 정보</h3>
+                        <div class="button-group" style="display: flex; gap: 0.5rem;">
+                            <button type="button" class="btn btn-primary" id="btn_categoryInfo_save">저장</button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <form id="categoryInfoForm">
+                            <input type="hidden" id="categoryInfo_siteNo" name="siteNo">
+                            <input type="hidden" id="categoryInfo_dpmlNo" name="dpmlNo">
+                            <input type="hidden" id="categoryInfo_level" name="level">
+                            <input type="hidden" id="categoryInfo_dispCtgNo" name="dispCtgNo">
+                            
+                            <table class="data-table">
+                                <tr>
+                                    <th>사이트</th>
+                                    <td><span id="categoryInfo_siteNm" style="font-weight: 600;">-</span></td>
+                                    <th>전시 카테고리 번호</th>
+                                    <td><span id="categoryInfo_categoryNo" style="font-family: monospace;">-</span></td>
+                                </tr>
+                                <tr>
+                                    <th><label style="color: #fb7185;">*</label> 전시 카테고리명</th>
+                                    <td><input type="text" id="categoryInfo_categoryNm" name="dispCtgNm" class="form-input"></td>
+                                    <th><label style="color: #fb7185;">*</label> 전시순서</th>
+                                    <td><input type="number" id="categoryInfo_dispSeq" name="dispSeq" class="form-input" style="width: 80px;"></td>
+                                </tr>
+                                <tr>
+                                    <th><label style="color: #fb7185;">*</label> 사용여부</th>
+                                    <td>
+                                        <label style="margin-right: 1rem;"><input type="radio" name="useYn" value="Y"> 사용</label>
+                                        <label><input type="radio" name="useYn" value="N"> 미사용</label>
+                                    </td>
+                                    <th><label style="color: #fb7185;">*</label> 리프여부</th>
+                                    <td>
+                                        <label style="margin-right: 1rem;"><input type="radio" name="leafYn" value="Y"> 예</label>
+                                        <label><input type="radio" name="leafYn" value="N"> 아니오</label>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>YES24 카테고리 코드</th>
+                                    <td><input type="text" id="categoryInfo_yes24CtgCd" name="yes24CtgCd" class="form-input"></td>
+                                    <th>수정자/일시</th>
+                                    <td style="font-size: 0.75rem; color: var(--text-muted);">
+                                        <span id="categoryInfo_sysModId"></span> / <span id="categoryInfo_sysModDtm"></span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- B: Sub Category Grid -->
+                <div class="section-card" id="subCategoryGridSection">
+                    <div class="card-header">
+                        <h3>하위 전시 카테고리</h3>
+                        <div class="button-group" style="display: flex; gap: 0.5rem;">
+                            <button type="button" class="btn btn-secondary" id="btn_subCategoryGrid_add">행추가</button>
+                            <button type="button" class="btn btn-secondary" id="btn_subCategoryGrid_remove">행삭제</button>
+                            <button type="button" class="btn btn-primary" id="btn_subCategoryGrid_save">목록저장</button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="subCategoryGrid" style="width: 100%; height: 300px;"></div>
+                    </div>
+                </div>
+
+                <!-- C: Display Goods Grid -->
+                <div class="section-card" id="displayGoodsGridSection" style="display: none;">
+                    <div class="card-header">
+                        <h3>전시 상품 목록</h3>
+                        <div class="button-group" style="display: flex; gap: 0.5rem;">
+                            <button type="button" class="btn btn-secondary" id="btn_displayGoodsGrid_add">상품추가</button>
+                            <button type="button" class="btn btn-secondary" id="btn_displayGoodsGrid_remove">삭제</button>
+                            <button type="button" class="btn btn-primary" id="btn_displayGoodsGrid_save">상품저장</button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="displayGoodsGrid" style="width: 100%; height: 350px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <th:block layout:fragment="script">
+        <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+        <script th:src="@{/js/AUIGrid/AUIGridLicense.js}"></script>
+        <script th:src="@{/js/AUIGrid/AUIGrid.js}"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/zTree.v3/3.5.40/js/jquery.ztree.all.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+        
+        <script th:inline="javascript">
+            const mallList = [[${mallList}]];
+            const siteList = [[${siteList}]];
+        </script>
+        <script th:src="@{/js/display/displayCategoryMgmt.js}"></script>
+    </th:block>
+</body>
+
+</html>

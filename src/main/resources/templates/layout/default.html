@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Migproject Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/index.css}">
+    <!-- Each page can add its own head blocks -->
+    <th:block layout:fragment="head"></th:block>
+</head>
+
+<body>
+    <!-- Sidebar Fragment -->
+    <div class="sidebar">
+        <div class="logo-area">
+            <div class="logo-icon">M</div>
+            <span class="logo-text">MIG APP</span>
+        </div>
+
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="/" class="nav-link">
+                    <i class="fa-solid fa-gauge-high"></i>
+                    대시보드
+                </a>
+            </li>
+
+            <li class="nav-section">상품관리</li>
+            <li class="nav-item">
+                <a href="/goods/optionMgmt.optionMgmtView.do" class="nav-link">
+                    <i class="fa-solid fa-list-check"></i>
+                    옵션 분류코드 관리
+                </a>
+            </li>
+
+            <li class="nav-section">전시관리</li>
+            <li class="nav-item">
+                <a href="/display/standardCategoryMgmt/standardCategoryMgmtView.do" class="nav-link">
+                    <i class="fa-solid fa-folder-tree"></i>
+                    표준 카테고리 관리
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/display/displayCategoryMgmt/displayCategoryMgmtView.do" class="nav-link">
+                    <i class="fa-solid fa-sitemap"></i>
+                    전시 카테고리 관리
+                </a>
+            </li>
+
+            <li class="nav-section">시스템 설정</li>
+            <li class="nav-item"><a href="#" class="nav-link"><i class="fa-solid fa-code"></i> 공통코드 관리</a></li>
+            <li class="nav-item"><a href="#" class="nav-link"><i class="fa-solid fa-users-gear"></i> 사용자 권한 관리</a></li>
+        </ul>
+    </div>
+
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+        <div class="page-container">
+            <!-- Content Fragment -->
+            <th:block layout:fragment="content"></th:block>
+        </div>
+    </div>
+
+    <!-- Layout Scripts -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var currentPath = window.location.pathname;
+            var navLinks = document.querySelectorAll(".nav-link");
+            navLinks.forEach(function (link) {
+                if (link.getAttribute("href") === currentPath) {
+                    link.classList.add("active");
+                }
+            });
+        });
+    </script>
+    <th:block layout:fragment="script"></th:block>
+</body>
+
+</html>

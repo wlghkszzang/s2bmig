@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aas.display.infrastructure.db.StandardCategoryCommandMyBatisDao">
+
+    <update id="updatePrStdCtg" parameterType="com.aas.display.domain.entity.PrStdCtg">
+        /* StandardCategoryCommandMyBatisDao.updatePrStdCtg */
+        UPDATE PR_STD_CTG
+        SET    STD_CTG_NM           = #{stdCtgNm}
+          , USE_YN               = #{useYn}
+          , SORT_SEQ             = #{sortSeq}
+          , LEAF_CTG_YN          = #{leafCtgYn}
+          , SAFE_CERTI_NEED_YN   = #{safeCertiNeedYn}
+          , MD_ID                = #{mdId}
+          , GOODS_NOTI_LISART_CD = #{goodsNotiLisartCd}
+          , HS_CD                = #{hsCd}
+          , MRGN_RATE            = #{mrgnRate}
+          , SAM_MARKET_YN        = #{samMarketYn}
+          , SYS_MOD_ID           = 'admin'
+          , SYS_MOD_DTM          = NOW()
+        WHERE STD_CTG_NO = #{stdCtgNo}
+    </update>
+
+    <insert id="insertPrStdCtgList" parameterType="java.util.List">
+        /* StandardCategoryCommandMyBatisDao.insertPrStdCtgList */
+        INSERT INTO PR_STD_CTG (
+            STD_CTG_NO, STD_CTG_NM, UPR_STD_CTG_NO, USE_YN, SORT_SEQ, LEAF_CTG_YN,
+            SAFE_CERTI_NEED_YN, GOODS_NOTI_LISART_CD, HS_CD, MRGN_RATE, SAM_MARKET_YN, MD_ID,
+            SYS_REG_ID, SYS_REG_DTM, SYS_MOD_ID, SYS_MOD_DTM
+        ) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+                (SELECT 'SC' || LPAD(COALESCE(MAX(SUBSTR(STD_CTG_NO, 3)), '0')::INTEGER + 1 || '', 8, '0') FROM PR_STD_CTG),
+                #{item.stdCtgNm}, #{item.uprStdCtgNo}, #{item.useYn}, #{item.sortSeq}, #{item.leafCtgYn},
+                #{item.safeCertiNeedYn}, #{item.goodsNotiLisartCd}, #{item.hsCd}, #{item.mrgnRate}, #{item.samMarketYn}, #{item.mdId},
+                'admin', NOW(), 'admin', NOW()
+            )
+        </foreach>
+    </insert>
+
+    <update id="updatePrStdCtgGridList" parameterType="java.util.List">
+        /* StandardCategoryCommandMyBatisDao.updatePrStdCtgGridList */
+        <foreach collection="list" item="item" separator=";">
+            UPDATE PR_STD_CTG
+            SET    STD_CTG_NM = #{item.stdCtgNm}
+                 , USE_YN = #{item.useYn}
+                 , SORT_SEQ = #{item.sortSeq}
+                 , LEAF_CTG_YN = #{item.leafCtgYn}
+                 , SYS_MOD_ID = 'admin'
+                 , SYS_MOD_DTM = NOW()
+            WHERE  STD_CTG_NO = #{item.stdCtgNo}
+        </foreach>
+    </update>
+
+    <delete id="deletePrStdCtgList" parameterType="java.util.List">
+        /* StandardCategoryCommandMyBatisDao.deletePrStdCtgList */
+        DELETE FROM PR_STD_CTG
+        WHERE STD_CTG_NO IN
+        <foreach collection="list" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </delete>
+
+    <delete id="deletePrStdCtgGoodsAttrList" parameterType="java.lang.String">
+        /* StandardCategoryCommandMyBatisDao.deletePrStdCtgGoodsAttrList */
+        DELETE FROM PR_STD_CTG_GOODS_ATT_INFO
+        WHERE STD_CTG_NO = #{stdCtgNo}
+    </delete>
+
+    <insert id="insertPrStdCtgGoodsAttrList" parameterType="java.util.List">
+        /* StandardCategoryCommandMyBatisDao.insertPrStdCtgGoodsAttrList */
+        INSERT INTO PR_STD_CTG_GOODS_ATT_INFO (
+            STD_CTG_NO, ATT_CD, DISP_SEQ, USE_YN,
+            SYS_REG_ID, SYS_REG_DTM, SYS_MOD_ID, SYS_MOD_DTM
+        ) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+                #{item.stdCtgNo}, #{item.attCd}, #{item.dispSeq}, #{item.useYn},
+                'admin', NOW(), 'admin', NOW()
+            )
+        </foreach>
+    </insert>
+
+</mapper>

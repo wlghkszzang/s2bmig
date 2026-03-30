@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aas.goods.infrastructure.db.OptionMgmtQueryMyBatisDao">
+
+    <select id="getOptionCategoryList" resultType="com.aas.goods.domain.repository.query.result.OptionMgmtQueryResult">
+        /* OptionMgmtQueryRepository.getOptionCategoryList */
+        SELECT TA.OPTN_CAT_NO
+             , TA.OPTN_CAT_REG_GB_CD
+             , FN_GET_CODENAME('PR018', TA.OPTN_CAT_REG_GB_CD) AS OPTN_CAT_REG_GB_CD_NM
+             , TA.ENTR_NO
+             , TB.ENTR_NM
+             , TA.OPTN_CAT_TYP_CD
+             , FN_GET_CODENAME('PR019', TA.OPTN_CAT_TYP_CD) AS OPTN_CAT_TYP_CD_NM
+             , TC.OPTN_CAT_NM
+             , TC.LANG_CD
+             , TA.SORT_SEQ
+             , TA.USE_YN
+             , TA.SYS_MOD_ID
+             , TA.SYS_MOD_DTM
+             , TA.SYS_REG_ID
+             , TA.SYS_REG_DTM
+             , COUNT(1) OVER() AS TOTAL_COUNT
+        FROM PR_OPTN_CLSS_CD TA
+            LEFT JOIN ET_ENTR_BASE TB ON TA.ENTR_NO = TB.ENTR_NO
+            JOIN PR_OPTN_CLSS_CD_ML TC ON TA.OPTN_CAT_NO = TC.OPTN_CAT_NO
+        <choose>
+            <when test="langCd != null">
+                AND TC.LANG_CD = #{langCd}
+            </when>
+            <otherwise>
+                AND TC.LANG_CD = 'ko'
+            </otherwise>
+        </choose>
+        WHERE 1=1
+        <if test="condxUseYn != null and condxUseYn != ''">
+            AND TA.USE_YN = #{condxUseYn}
+        </if>
+        <if test="condxOptnCatTypCd != null and condxOptnCatTypCd != ''">
+            AND TA.OPTN_CAT_TYP_CD = #{condxOptnCatTypCd}
+        </if>
+        <if test="condxOptnCatRegGbCd != null and condxOptnCatRegGbCd != ''">
+            AND TA.OPTN_CAT_REG_GB_CD = #{condxOptnCatRegGbCd}
+        </if>
+        <if test="entrNo != null and entrNo != ''">
+            AND (TA.ENTR_NO = #{entrNo} OR TA.OPTN_CAT_REG_GB_CD = '01')
+        </if>
+        <if test="optnCatNo != null and optnCatNo != ''">
+            AND TA.OPTN_CAT_NO = #{optnCatNo}
+        </if>
+        ORDER BY TA.SORT_SEQ, TA.SYS_MOD_DTM DESC
+    </select>
+
+    <select id="getOptionList" resultType="com.aas.goods.domain.repository.query.result.OptionMgmtQueryResult">
+        /* OptionMgmtQueryRepository.getPrOptnCdList */
+        SELECT TA.OPTN_CAT_NO
+             , TA.OPTN_NO
+             , TB.OPTN_NM
+             , TB.LANG_CD
+             , TA.SORT_SEQ
+             , TA.USE_YN
+             , TA.IMG_PATH_NM
+             , TA.IMG_FILE_NM
+             , TA.RGB_VAL
+             , TA.SYS_MOD_ID
+             , TA.SYS_MOD_DTM
+             , TA.SYS_REG_ID
+             , TA.SYS_REG_DTM
+             , COUNT(1) OVER() AS TOTAL_COUNT
+        FROM PR_OPTN_CD TA
+            JOIN PR_OPTN_CD_ML TB ON TA.OPTN_CAT_NO = TB.OPTN_CAT_NO AND TA.OPTN_NO = TB.OPTN_NO
+        <choose>
+            <when test="langCd != null and langCd != ''">
+                AND TB.LANG_CD = #{langCd}
+            </when>
+            <otherwise>
+                AND TB.LANG_CD = 'ko'
+            </otherwise>
+        </choose>
+        WHERE TA.OPTN_CAT_NO = #{optnCatNo}
+        <if test="useYn != null and useYn != ''">
+            AND TA.USE_YN = #{useYn}
+        </if>
+        ORDER BY TA.SORT_SEQ, TA.SYS_MOD_DTM DESC
+    </select>
+</mapper>

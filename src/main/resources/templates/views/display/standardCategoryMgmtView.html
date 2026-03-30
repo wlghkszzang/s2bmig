@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layout/default}">
+
+<head>
+    <title>표준 카테고리 관리</title>
+    <th:block layout:fragment="head">
+        <!-- CSS and JS references -->
+        <link rel="stylesheet" th:href="@{/js/AUIGrid/AUIGrid_style.css}">
+        <!-- zTree CSS (CDN for missing local file) -->
+        <link rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/zTree.v3/3.5.40/css/zTreeStyle/zTreeStyle.min.css">
+        <style>
+            :root {
+                --primary-color: #3b82f6;
+                --bg-color: #f1f5f9;
+                --border-color: #e2e8f0;
+                --header-bg: #f8fafc;
+            }
+
+            body {
+                background-color: var(--bg-color);
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                overflow-x: hidden;
+            }
+
+            .page-header {
+                margin-bottom: 20px;
+                border-bottom: 1px solid var(--border-color);
+                padding-bottom: 10px;
+            }
+
+            .page-header h1 {
+                font-size: 20px;
+                font-weight: 700;
+                color: #1e293b;
+                margin: 0;
+            }
+
+            .content-container {
+                display: flex;
+                gap: 20px;
+                align-items: flex-start;
+                min-height: 800px;
+            }
+
+            /* Tree Panel Styling */
+            .tree-panel {
+                width: 350px;
+                min-width: 350px;
+                background: #fff;
+                border: 1px solid var(--border-color);
+                border-radius: 12px;
+                padding: 0;
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+                display: flex;
+                flex-direction: column;
+                height: 800px;
+                overflow: hidden;
+            }
+
+            .panel-header {
+                padding: 18px 20px;
+                border-bottom: 1px solid #f1f5f9;
+                background: linear-gradient(to right, #ffffff, #f8fafc);
+                border-radius: 12px 12px 0 0;
+            }
+
+            .panel-header h3 {
+                font-size: 14px;
+                color: #1e293b;
+                margin: 0;
+                font-weight: 700;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .panel-header h3::before {
+                content: '📂';
+                font-size: 16px;
+            }
+
+            /* Modernized ZTree with Premium Look */
+            .ztree-wrap {
+                flex: 1;
+                overflow: auto;
+                padding: 10px 15px;
+            }
+
+            .ztree * {
+                font-family: 'Inter', 'Outfit', sans-serif !important;
+                font-size: 13.5px !important;
+                padding: 0;
+                margin: 0;
+                list-style: none !important;
+                /* Remove any bullets */
+            }
+
+            .ztree li {
+                padding: 1px 0;
+                line-height: normal;
+                background: none !important;
+            }
+
+            /* Indentation & Hierarchical Lines */
+            .ztree li ul {
+                padding-left: 18px;
+                margin-left: 8px;
+                border-left: 1px solid #e2e8f0;
+                margin-top: 2px;
+                margin-bottom: 2px;
+            }
+
+            .ztree li a {
+                padding: 6px 10px;
+                height: 38px !important;
+                color: #475569 !important;
+                text-decoration: none;
+                border: none !important;
+                border-radius: 8px;
+                transition: all 0.2s ease;
+                display: inline-flex !important;
+                align-items: center;
+                width: calc(100% - 35px);
+                cursor: pointer;
+            }
+
+            /* Depth Specific Styling */
+            .ztree li.level0>a {
+                font-weight: 800;
+                color: #0f172a !important;
+                font-size: 14.5px !important;
+                background-color: #f8fafc;
+                margin-bottom: 3px;
+                border: 1px solid #f1f5f9 !important;
+            }
+
+            .ztree li.level1>a {
+                font-weight: 700;
+                color: #334155 !important;
+            }
+
+            .ztree li.level2>a {
+                font-weight: 500;
+                color: #475569 !important;
+            }
+
+            .ztree li.level3>a {
+                font-weight: 400;
+                color: #64748b !important;
+            }
+
+            .ztree li a:hover {
+                background-color: #f1f5f9 !important;
+                color: #2563eb !important;
+                transform: translateX(2px);
+            }
+
+            .ztree li a.curSelectedNode {
+                background-color: #eff6ff !important;
+                color: #2563eb !important;
+                font-weight: 700 !important;
+                box-shadow: inset 3px 0 0 #2563eb;
+            }
+
+            /* Buttons & Switches Cleanup */
+            .ztree li span.button {
+                background-image: none !important;
+                background: none !important;
+                width: 22px;
+                height: 22px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                vertical-align: middle;
+            }
+
+            /* Custom Arrow Indicators */
+            .ztree li span.button.switch {
+                margin-right: 4px;
+                cursor: pointer;
+            }
+
+            .ztree li span.button.root_open::before,
+            .ztree li span.button.roots_open::before,
+            .ztree li span.button.center_open::before,
+            .ztree li span.button.bottom_open::before {
+                content: '▼';
+                font-size: 11px;
+                color: #64748b;
+            }
+
+            .ztree li span.button.root_close::before,
+            .ztree li span.button.roots_close::before,
+            .ztree li span.button.center_close::before,
+            .ztree li span.button.bottom_close::before {
+                content: '▶';
+                font-size: 11px;
+                color: #64748b;
+            }
+
+            /* Custom Icons - Depth Specific Visuals */
+            .ztree li span.button.ico_open,
+            .ztree li span.button.ico_close,
+            .ztree li span.button.ico_docu {
+                font-size: 18px;
+                margin-right: 8px;
+            }
+
+            /* Root level (1Depth) uses slightly larger icons */
+            .ztree li.level0>span.button.ico_open,
+            .ztree li.level0>span.button.ico_close {
+                font-size: 20px;
+            }
+
+            .ztree li span.button.ico_open::before,
+            .ztree li span.button.ico_close::before {
+                content: '📁';
+                color: #3b82f6;
+                filter: sepia(1) hue-rotate(190deg) saturate(5) brightness(0.9);
+            }
+
+            .ztree li span.button.ico_open::before {
+                content: '📂';
+            }
+
+            .ztree li span.button.ico_docu::before {
+                content: '📄';
+                opacity: 0.6;
+                font-size: 17px;
+            }
+
+            /* Text Styling */
+            .ztree li a span.node_name {
+                max-width: 190px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                margin-left: 5px;
+            }
+
+            .details-panel {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                gap: 20px;
+                min-width: 0;
+                height: 800px;
+                overflow-y: auto;
+                padding-right: 5px;
+                /* Space for scrollbar */
+            }
+
+            .section-card {
+                background: #fff;
+                border: 1px solid var(--border-color);
+                border-radius: 12px;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+                display: flex;
+                flex-direction: column;
+                flex-shrink: 0;
+            }
+
+            .card-header {
+                padding: 12px 20px;
+                background: var(--header-bg);
+                border-bottom: 1px solid var(--border-color);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                border-radius: 12px 12px 0 0;
+            }
+
+            .card-header h3 {
+                font-size: 14px;
+                color: #334155;
+                margin: 0;
+                font-weight: 700;
+            }
+
+            .card-body {
+                padding: 15px;
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                min-height: 0;
+            }
+
+            /* Responsive Grid Heights */
+            #childGrid {
+                width: 100%;
+                height: 480px;
+                /* Standard child list height */
+            }
+
+            #attrGrid {
+                width: 100%;
+                height: 220px;
+                /* Attribute list (middle) */
+            }
+
+            #goodsGrid {
+                width: 100%;
+                height: 380px;
+                /* Product list (bottom) */
+            }
+
+            /* Form Styles */
+            .form-table {
+                width: 100%;
+                border-collapse: collapse;
+                table-layout: fixed;
+            }
+
+            .form-table th {
+                background: #f8fafc;
+                text-align: left;
+                padding: 10px;
+                border: 1px solid #e2e8f0;
+                font-size: 12px;
+                color: #64748b;
+                width: 140px;
+            }
+
+            .form-table td {
+                padding: 8px;
+                border: 1px solid #e2e8f0;
+            }
+
+            .form-input {
+                border: 1px solid #cbd5e1;
+                border-radius: 4px;
+                padding: 6px 10px;
+                font-size: 13px;
+                width: 100%;
+                box-sizing: border-box;
+            }
+
+            .form-input:focus {
+                outline: none;
+                border-color: #3b82f6;
+                box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+            }
+
+            .btn {
+                padding: 6px 14px;
+                border-radius: 4px;
+                font-size: 12px;
+                font-weight: 500;
+                cursor: pointer;
+                border: 1px solid transparent;
+                transition: all 0.2s;
+            }
+
+            .btn-primary {
+                background: #2563eb;
+                color: #fff;
+            }
+
+            .btn-primary:hover {
+                background: #1d4ed8;
+            }
+
+            .btn-secondary {
+                background: #fff;
+                border-color: #d1d5db;
+                color: #4b5563;
+            }
+
+            .btn-secondary:hover {
+                background: #f9fafb;
+                border-color: #9ca3af;
+            }
+
+            .input-group {
+                display: flex;
+                gap: 5px;
+                align-items: center;
+            }
+
+            /* Loading Spinner Styles */
+            .loader-overlay {
+                position: absolute;
+                top: 0; left: 0; right: 0; bottom: 0;
+                background: rgba(255, 255, 255, 0.8);
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                z-index: 100;
+                gap: 12px;
+            }
+            .loader-spinner {
+                width: 35px;
+                height: 35px;
+                border: 4px solid #f1f5f9;
+                border-top: 4px solid var(--primary-color);
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+            }
+            .loader-text {
+                font-size: 13px;
+                color: #64748b;
+                font-weight: 500;
+            }
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        </style>
+    </th:block>
+</head>
+
+<body>
+    <div layout:fragment="content">
+        <div class="page-header" style="margin-bottom: 2rem;">
+            <h1 style="font-family: 'Outfit', sans-serif; font-size: 1.75rem; font-weight: 700;">표준 카테고리 관리 🌳</h1>
+            <p style="color: var(--text-muted); font-size: 0.95rem;">마스터 데이터를 기반으로 상품 표준 분류 체계를 구성하고 관리합니다.</p>
+        </div>
+
+        <div class="content-container" style="display: flex; gap: 1.5rem;">
+            <!-- Left Tree Area -->
+            <!-- 왼쪽 트리 패널 -->
+            <div class="tree-panel">
+                <div class="panel-header">
+                    <h3>표준카테고리 조회</h3>
+                </div>
+                <div class="ztree-wrap" style="position: relative; min-height: 200px;">
+                    <div id="treeLoader" class="loader-overlay" style="display: none;">
+                        <div class="loader-spinner"></div>
+                        <div class="loader-text">표준분류 정보를 조회 중입니다...</div>
+                    </div>
+                    <ul id="categoryTree" class="ztree"></ul>
+                </div>
+            </div>
+
+            <!-- Right Content Area -->
+            <div class="details-panel" style="flex: 1; display: flex; flex-direction: column; gap: 20px;">
+                <!-- Category Info Form -->
+                <div class="section-card" id="categoryInfoSection">
+                    <div class="card-header">
+                        <h3>표준 분류 기본 정보</h3>
+                        <div class="header-buttons">
+                            <button type="button" class="btn btn-primary" id="btnSaveInfo">저장</button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <form id="categoryForm">
+                            <table class="form-table">
+                                <colgroup>
+                                    <col style="width: 15%;">
+                                    <col style="width: 35%;">
+                                    <col style="width: 15%;">
+                                    <col style="width: 35%;">
+                                </colgroup>
+                                <tr>
+                                    <th>표준 분류 번호/명</th>
+                                    <td>
+                                        <div class="input-group">
+                                            <input type="text" id="stdCtgNo" name="stdCtgNo" class="form-input" readonly
+                                                style="width: 80px; background: #f5f5f5;">
+                                            <input type="text" id="stdCtgNm" name="stdCtgNm" class="form-input"
+                                                placeholder="분류명 입력">
+                                        </div>
+                                    </td>
+                                    <th>상위 표준 분류</th>
+                                    <td>
+                                        <div class="input-group">
+                                            <input type="text" id="uprStdCtgNo" class="form-input" readonly
+                                                style="width: 80px; background: #f5f5f5;">
+                                            <input type="text" id="uprStdCtgNm" class="form-input" readonly
+                                                style="background: #f5f5f5;">
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>사용 여부</th>
+                                    <td>
+                                        <label><input type="radio" name="useYn" value="Y" checked> 사용</label>
+                                        <label><input type="radio" name="useYn" value="N"> 미사용</label>
+                                    </td>
+                                    <th>정렬 순서</th>
+                                    <td>
+                                        <input type="number" id="sortSeq" name="sortSeq" class="form-input"
+                                            style="width: 100px;">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>리프 카테고리 여부</th>
+                                    <td>
+                                        <label><input type="radio" name="leafCtgYn" value="Y"> 예</label>
+                                        <label><input type="radio" name="leafCtgYn" value="N" checked> 아니오</label>
+                                    </td>
+                                    <th>마진율(%)</th>
+                                    <td>
+                                        <input type="number" id="mrgnRate" name="mrgnRate" class="form-input"
+                                            style="width: 100px;" step="0.1">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>안전인증 대상 여부</th>
+                                    <td>
+                                        <label><input type="radio" name="safeCertiNeedYn" value="Y"> 대상</label>
+                                        <label><input type="radio" name="safeCertiNeedYn" value="N" checked> 아님</label>
+                                    </td>
+                                    <th>HS 코드</th>
+                                    <td>
+                                        <input type="text" id="hsCd" name="hsCd" class="form-input">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>상품고시 품목</th>
+                                    <td>
+                                        <div class="input-group">
+                                            <input type="text" id="goodsNotiLisartCdNm" class="form-input" readonly style="background: #f5f5f5;">
+                                            <input type="hidden" id="goodsNotiLisartCd" name="goodsNotiLisartCd">
+                                            <button type="button" class="btn btn-secondary" id="btnCallNotiPopup">🔍</button>
+                                        </div>
+                                    </td>
+                                    <th>담당 MD</th>
+                                    <td>
+                                        <div class="input-group">
+                                            <input type="text" id="mdNm" class="form-input" readonly style="background: #f5f5f5;">
+                                            <input type="hidden" id="mdId" name="mdId">
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>최종 수정자</th>
+                                    <td id="txtSysModId" style="font-size: 12px; color: #666;">-</td>
+                                    <th>최종 수정일시</th>
+                                    <td id="txtSysModDtm" style="font-size: 12px; color: #666;">-</td>
+                                </tr>
+                            </table>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Child Categories Grid (Shown for non-leaf nodes) -->
+                <div class="section-card" id="childCategoryGridSection">
+                    <div class="card-header">
+                        <h3>하위 표준 분류 목록</h3>
+                        <div class="header-buttons">
+                            <button type="button" class="btn btn-secondary" id="btnAddRow">행추가</button>
+                            <button type="button" class="btn btn-secondary" id="btnDelRow">행삭제</button>
+                            <button type="button" class="btn btn-secondary" id="btnResetGrid">초기화</button>
+                            <button type="button" class="btn btn-primary" id="btnSaveGrid">저장</button>
+                            <button type="button" class="btn btn-secondary" id="btnExcelChild">Excel</button>
+                        </div>
+                    </div>
+                    <div class="card-body" id="childGrid"></div>
+                </div>
+
+                <!-- Leaf Node Specific Grids (Shown for leaf nodes) -->
+                <div id="leafNodeGridSection" style="display: none; flex-direction: column; gap: 20px;">
+                    <!-- Child Product Attributes Grid -->
+                    <div class="section-card">
+                        <div class="card-header">
+                            <h3>하위 상품속성 목록</h3>
+                            <div class="header-buttons">
+                                <button type="button" class="btn btn-secondary" id="btnAddAttr">추가</button>
+                                <button type="button" class="btn btn-secondary" id="btnDelAttr">삭제</button>
+                                <button type="button" class="btn btn-secondary" id="btnResetAttr">초기화</button>
+                                <button type="button" class="btn btn-primary" id="btnSaveAttr">저장</button>
+                                <button type="button" class="btn btn-secondary" id="btnExcelAttr">Excel</button>
+                            </div>
+                        </div>
+                        <div class="card-body" id="attrGrid"></div>
+                    </div>
+
+                    <!-- Child Product List Grid -->
+                    <div class="section-card">
+                        <div class="card-header">
+                            <h3>하위 상품 목록</h3>
+                            <div class="header-buttons">
+                                <button type="button" class="btn btn-secondary" id="btnExcelGoods">Excel</button>
+                            </div>
+                        </div>
+                        <div class="card-body" id="goodsGrid"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <th:block layout:fragment="script">
+        <!-- jQuery is required for zTree and the page script -->
+        <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+        <!-- AUIGrid (Corrected paths) -->
+        <script th:src="@{/js/AUIGrid/AUIGridLicense.js}"></script>
+        <script th:src="@{/js/AUIGrid/AUIGrid.js}"></script>
+
+        <!-- zTree (CDN for missing local file) -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/zTree.v3/3.5.40/js/jquery.ztree.all.min.js"></script>
+
+        <!-- Axios for AJAX -->
+        <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+        <!-- Custom Page Script -->
+        <script th:src="@{/js/display/standardCategoryMgmt.js}"></script>
+    </th:block>
+</body>
+
+</html>

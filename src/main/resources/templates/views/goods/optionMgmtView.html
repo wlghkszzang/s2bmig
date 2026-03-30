@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layout/default}">
+
+<head>
+    <title>옵션 분류코드 관리</title>
+    <!-- AUIGrid CSS & JS -->
+    <link rel="stylesheet" th:href="@{/js/AUIGrid/AUIGrid_style.css}">
+    <style>
+        .page-header h1 {
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+            display: inline-block;
+        }
+
+        .search-area {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+        }
+
+        .grid-container {
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+        }
+
+        .btn-group {
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: var(--transition);
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-outline {
+            border: 1px solid #ddd;
+            background: white;
+            color: var(--text-main);
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .table-form th {
+            text-align: left;
+            padding: 10px;
+            width: 120px;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .table-form td {
+            padding: 5px 10px;
+        }
+
+        .select,
+        .input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .label-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            display: block;
+            color: var(--sidebar-bg);
+        }
+    </style>
+</head>
+
+<body>
+    <div layout:fragment="content">
+        <div class="page-header">
+            <h1>옵션 분류코드 관리</h1>
+        </div>
+
+        <!-- 상단 검색 영역 -->
+        <div class="search-area">
+            <form id="optionCategoryListGridForm">
+                <table class="table-form">
+                    <tr>
+                        <th>사용처</th>
+                        <td>
+                            <select id="condxOptnCatRegGbCd" name="condxOptnCatRegGbCd" class="select">
+                                <option value="">전체</option>
+                                <option th:each="code : ${codeList.PR018}" th:value="${code.cd}" th:text="${code.cdNm}">
+                                </option>
+                            </select>
+                        </td>
+                        <th>분류유형</th>
+                        <td>
+                            <select id="condxOptnCatTypCd" name="condxOptnCatTypCd" class="select">
+                                <option value="">전체</option>
+                                <option th:each="code : ${codeList.PR019}" th:value="${code.cd}" th:text="${code.cdNm}">
+                                </option>
+                            </select>
+                        </td>
+                        <th>사용여부</th>
+                        <td>
+                            <select id="condxUseYn" name="condxUseYn" class="select">
+                                <option value="">전체</option>
+                                <option value="Y">사용</option>
+                                <option value="N">미사용</option>
+                            </select>
+                        </td>
+                        <td style="text-align: right;">
+                            <button id="btn_init" class="btn btn-outline">초기화</button>
+                            <button id="btn_search" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass"></i>
+                                조회</button>
+                        </td>
+                    </tr>
+                </table>
+            </form>
+        </div>
+
+        <!-- 마스터 그리드 (옵션 분류) -->
+        <div class="grid-container">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <span class="label-title"><i class="fa-solid fa-layer-group"></i> 옵션 분류 목록</span>
+                <div class="btn-group">
+                    <button id="btn_optn_ctg_add" class="btn btn-outline">행추가</button>
+                    <button id="btn_optn_ctg_cancel" class="btn btn-outline">취소</button>
+                    <button id="btn_optn_ctg_save" class="btn btn-primary">저장</button>
+                </div>
+            </div>
+            <div id="optionCategoryListGrid" style="width: 100%; height: 350px;"></div>
+        </div>
+
+        <!-- 디테일 그리드 (옵션 코드) -->
+        <div class="grid-container">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <span class="label-title"><i class="fa-solid fa-list-ul"></i> 옵션 상세 코드</span>
+                <div class="btn-group">
+                    <button id="btn_optn_add" class="btn btn-outline">행추가</button>
+                    <button id="btn_optn_cancel" class="btn btn-outline">취소</button>
+                    <button id="btn_optn_save" class="btn btn-primary">저장</button>
+                </div>
+            </div>
+            <div id="optionListGrid" style="width: 100%; height: 350px;"></div>
+        </div>
+    </div>
+
+    <!-- 스크립트 영역 -->
+    <th:block layout:fragment="script">
+        <script th:src="@{/js/AUIGrid/AUIGrid.js}"></script>
+        <script th:src="@{/js/AUIGrid/AUIGridLicense.js}"></script>
+        <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+        <script th:src="@{/js/goods/optionCategoryListGrid.js}"></script>
+        <script th:src="@{/js/goods/optionListGrid.js}"></script>
+
+        <script th:inline="javascript">
+            document.addEventListener("DOMContentLoaded", function () {
+                // Thymeleaf로부터 직접 각각의 리스트를 안전하게 추출 (Map 구조 활용)
+                var pr018Raw = /*[[${codeList.PR018}]]*/ [];
+                var pr019Raw = /*[[${codeList.PR019}]]*/ [];
+                var uploadDomain = /*[[${uploadDomain}]]*/ "";
+
+                // 검색용 Map 변환
+                const regGbSelect = (pr018Raw || []).reduce((acc, item) => { acc[item.cd] = item.cdNm; return acc; }, {});
+                const typCdSelect = (pr019Raw || []).reduce((acc, item) => { acc[item.cd] = item.cdNm; return acc; }, {});
+
+                // 그리드 초기화
+                OptionCategoryGrid.init(regGbSelect, typCdSelect);
+                OptionCodeGrid.init(uploadDomain);
+            });
+        </script>
+    </th:block>
+</body>
+
+</html>

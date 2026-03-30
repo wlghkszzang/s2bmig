@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <meta charset="UTF-8">
+    <title>옵션 관리 - MigProject</title>
+    
+    <!-- AUIGrid CSS (User Provided) -->
+    <link rel="stylesheet" th:href="@{/js/AUIGrid/AUIGrid_style.css}">
+
+    <!-- JS Libs (CDN for now to ensure grid works) -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    
+    <!-- AUIGrid JS (User Provided) -->
+    <script type="text/javascript" th:src="@{/js/AUIGrid/AUIGrid.js}"></script>
+    <script type="text/javascript" th:src="@{/js/AUIGrid/AUIGridLicense.js}"></script>
+
+    <th:block layout:fragment="add-script-head"></th:block>
+</head>
+<body>
+    <div class="page-root">
+        <th:block layout:fragment="page-title-area" />
+        <th:block layout:fragment="page-contents" />
+    </div>
+
+    <!-- 추가 스크립트 영역 -->
+    <th:block layout:fragment="add-script" />
+</body>
+</html>

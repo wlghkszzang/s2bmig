@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <meta charset="UTF-8">
+    <title>Popup - MigProject</title>
+    
+    <!-- CSS references -->
+    <link rel="stylesheet" th:href="@{/css/index.css}">
+    <link rel="stylesheet" th:href="@{/js/AUIGrid/AUIGrid_style.css}">
+    
+    <style>
+        body {
+            background-color: #fff;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+        .title-area h1 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #3b82f6;
+        }
+        .search-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+        .search-table td {
+            padding: 10px;
+            border: 1px solid #e2e8f0;
+        }
+        .search-table td.label {
+            background-color: #f8fafc;
+            font-weight: 600;
+            width: 120px;
+        }
+        .form-control {
+            border: 1px solid #cbd5e1;
+            padding: 6px 12px;
+            border-radius: 4px;
+        }
+        .w100 { width: 100%; }
+        .button {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .button.dark { background: #1e293b; color: #fff; }
+        .button.white { background: #fff; border: 1px solid #d1d5db; color: #4b5563; }
+    </style>
+</head>
+<body>
+    <div class="popup-wrapper">
+        <!-- Fragment for Title Area -->
+        <th:block layout:fragment="popup-title-area" />
+        
+        <!-- Fragment for Search Area -->
+        <th:block layout:fragment="popup-search-area" />
+    </div>
+
+    <!-- JS Libs -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script th:src="@{/js/AUIGrid/AUIGridLicense.js}"></script>
+    <script th:src="@{/js/AUIGrid/AUIGrid.js}"></script>
+
+    <!-- Additional Script Fragment -->
+    <th:block layout:fragment="add-script" />
+</body>
+</html>

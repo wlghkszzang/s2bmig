@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aas.display.infrastructure.db.StandardCategoryQueryMyBatisDao">
+
+    <select id="getPrStdCtgListWithHierarchy" resultType="com.aas.display.domain.repository.query.result.StandardCategoryMgmtQueryResult">
+        /* StandardCategoryQueryMyBatisDao.getPrStdCtgListWithHierarchy */
+        SELECT PSC.STD_CTG_NO
+             , PSC.STD_CTG_NM
+             , PSC.LEAF_CTG_YN
+             , PSC.USE_YN
+             , PSC.SORT_SEQ
+             , PSC.UPR_STD_CTG_NO
+             , PSC.STD_LRG_CTG_NO
+             , PSC.STD_MID_CTG_NO
+             , PSC.STD_SML_CTG_NO
+             , PSC.STD_THN_CTG_NO
+             , PSC.MD_ID
+             , SUB.USER_NM AS MD_NM
+             , PSC.SAFE_CERTI_NEED_YN
+             , PSC.GOODS_NOTI_LISART_CD
+             , (SELECT
+                         PSC_LRG.STD_CTG_NM
+                         || COALESCE('>' || PSC_MID.STD_CTG_NM, '')
+                         || COALESCE('>' || PSC_SML.STD_CTG_NM, '')
+                         || COALESCE('>' || PSC_THN.STD_CTG_NM, '')
+                 FROM PR_STD_CTG PSC_TEMP
+                          LEFT OUTER JOIN PR_STD_CTG PSC_LRG ON PSC_TEMP.STD_LRG_CTG_NO = PSC_LRG.STD_CTG_NO
+                          LEFT OUTER JOIN PR_STD_CTG PSC_MID ON PSC_TEMP.STD_MID_CTG_NO = PSC_MID.STD_CTG_NO
+                          LEFT OUTER JOIN PR_STD_CTG PSC_SML ON PSC_TEMP.STD_SML_CTG_NO = PSC_SML.STD_CTG_NO
+                          LEFT OUTER JOIN PR_STD_CTG PSC_THN ON PSC_TEMP.STD_THN_CTG_NO = PSC_THN.STD_CTG_NO
+                 WHERE PSC.STD_CTG_NO = PSC_TEMP.STD_CTG_NO) AS HIERARCHY_TEXT
+             , PSC.MRGN_RATE
+        FROM PR_STD_CTG PSC
+                 LEFT OUTER JOIN ST_USER_BASE SUB ON PSC.MD_ID = SUB.USER_ID
+        ORDER BY PSC.UPR_STD_CTG_NO, PSC.SORT_SEQ, PSC.SYS_MOD_DTM DESC
+    </select>
+
+    <sql id="withHierarchy">
+        WITH RECURSIVE CTG_HIERARCHY AS (
+            SELECT
+                1 AS LEVEL,
+                TEMP_PSC.STD_CTG_NO,
+                TEMP_PSC.UPR_STD_CTG_NO,
+                TEMP_PSC.MRGN_RATE
+            FROM PR_STD_CTG TEMP_PSC
+            WHERE 1 = 1
+            <if test="stdCtgNo != null and stdCtgNo != ''">
+                AND TEMP_PSC.STD_CTG_NO = #{stdCtgNo}
+            </if>
+            UNION ALL
+            SELECT
+                LEVEL + 1 AS LEVEL,
+                RECUR_PSC.STD_CTG_NO,
+                RECUR_PSC.UPR_STD_CTG_NO,
+                RECUR_PSC.MRGN_RATE
+            FROM PR_STD_CTG RECUR_PSC
+                     JOIN CTG_HIERARCHY H ON RECUR_PSC.STD_CTG_NO = H.UPR_STD_CTG_NO
+        )
+    </sql>
+
+    <select id="getStandardCategoryInfo" parameterType="com.aas.display.domain.repository.query.param.StandardCategoryMgmtQueryParam" resultType="com.aas.display.domain.repository.query.result.StandardCategoryMgmtQueryResult">
+        /* StandardCategoryQueryMyBatisDao.getStandardCategoryInfo */
+        <include refid="withHierarchy" />
+        SELECT PSC.STD_CTG_NO
+             , PSC.STD_CTG_NM
+             , PSC.UPR_STD_CTG_NO
+             , UPPER_PSC.STD_CTG_NM AS UPR_STD_CTG_NM
+             , PSC.USE_YN
+             , PSC.SORT_SEQ
+             , PSC.LEAF_CTG_YN
+             , PSC.SAFE_CERTI_NEED_YN
+             , PSC.MD_ID
+             , PSC.HS_CD
+             , SUB.USER_NM AS MD_NM
+             , PSC.GOODS_NOTI_LISART_CD
+             , FN_GET_CODENAME('PR012', PSC.GOODS_NOTI_LISART_CD) AS GOODS_NOTI_LISART_CD_NM
+             , CASE
+                   WHEN PSC.STD_CTG_NO
+                       IN (SELECT PSC1.UPR_STD_CTG_NO
+                           FROM PR_STD_CTG PSC1) THEN 'N'
+                   WHEN
+                        (SELECT COUNT(1)
+                        FROM PR_STD_CTG_DISP_INFO PSCDI
+                        WHERE PSCDI.STD_CTG_NO = #{stdCtgNo}
+                        AND PSCDI.DEL_YN = 'N') <![CDATA[ > ]]> 0 THEN 'N'
+                   WHEN
+                        (SELECT COUNT(1)
+                         FROM PR_GOODS_BASE PGB
+                         WHERE PGB.STD_CTG_NO = PSC.STD_CTG_NO
+                           AND PGB.SALE_STAT_CD IN ('10', '20')) <![CDATA[ > ]]> 0 THEN 'N'
+                   WHEN COALESCE(PSC.STD_THN_CTG_NO, '') != '' THEN 'N'
+                   ELSE 'Y' END LEAF_CTG_YN_CHANGE_POSSIBLE
+             , PSC.MRGN_RATE
+             -- , PSC.SAM_MARKET_YN
+             , PSC.SYS_MOD_ID
+             , PSC.SYS_MOD_DTM
+        FROM   PR_STD_CTG PSC
+                   LEFT OUTER JOIN ST_USER_BASE SUB ON (PSC.MD_ID = SUB.USER_ID)
+                   LEFT OUTER JOIN PR_STD_CTG UPPER_PSC ON (PSC.UPR_STD_CTG_NO = UPPER_PSC.STD_CTG_NO)
+        WHERE PSC.STD_CTG_NO = #{stdCtgNo}
+    </select>
+
+    <select id="getStandardCategoryMgmtChildListCount" parameterType="com.aas.display.domain.repository.query.param.StandardCategoryMgmtQueryParam" resultType="java.lang.Integer">
+        /* StandardCategoryQueryMyBatisDao.getStandardCategoryMgmtChildListCount */
+        SELECT COUNT(1)
+        FROM PR_STD_CTG PSC
+        WHERE PSC.UPR_STD_CTG_NO = #{stdCtgNo}
+    </select>
+
+    <select id="getStandardCategoryMgmtChildList" parameterType="com.aas.display.domain.repository.query.param.StandardCategoryMgmtQueryParam" resultType="com.aas.display.domain.repository.query.result.StandardCategoryMgmtQueryResult">
+        /* StandardCategoryQueryMyBatisDao.getStandardCategoryMgmtChildList */
+        SELECT PSC.STD_CTG_NO
+             , PSC.STD_CTG_NM
+             , PSC.USE_YN
+             , PSC.SORT_SEQ
+             , PSC.LEAF_CTG_YN
+             , PSC.UPR_STD_CTG_NO
+             , PSC.SYS_MOD_ID
+             , PSC.SYS_MOD_DTM
+             , CASE
+                   WHEN PSC.STD_CTG_NO
+                       IN (SELECT PSC1.UPR_STD_CTG_NO
+                           FROM PR_STD_CTG PSC1) THEN 'N'
+                   WHEN
+                        (SELECT COUNT(1)
+                        FROM PR_STD_CTG_DISP_INFO PSCDI
+                        WHERE PSCDI.STD_CTG_NO = PSC.STD_CTG_NO
+                        AND PSCDI.DEL_YN = 'N') <![CDATA[ > ]]> 0 THEN 'N'
+                   WHEN
+                        (SELECT COUNT(1)
+                         FROM PR_GOODS_BASE PGB
+                         WHERE PGB.STD_CTG_NO = PSC.STD_CTG_NO
+                           AND PGB.SALE_STAT_CD IN ('10', '20')) <![CDATA[ > ]]> 0 THEN 'N'
+                   WHEN COALESCE(PSC.STD_THN_CTG_NO, '') != '' THEN 'N'
+                   ELSE 'Y' END LEAF_CTG_YN_CHANGE_POSSIBLE
+        FROM   PR_STD_CTG PSC
+        WHERE  PSC.UPR_STD_CTG_NO = #{stdCtgNo}
+        ORDER BY PSC.SORT_SEQ, PSC.SYS_MOD_DTM DESC
+        LIMIT #{rowsPerPage} OFFSET (#{pageIdx} - 1) * #{rowsPerPage}
+    </select>
+
+    <select id="getStandardCategoryMgmtGoodsListCount" parameterType="com.aas.display.domain.repository.query.param.StandardCategoryMgmtQueryParam" resultType="java.lang.Integer">
+        /* StandardCategoryQueryMyBatisDao.getStandardCategoryMgmtGoodsListCount */
+        SELECT COUNT(1)
+        FROM   PR_GOODS_BASE PGB
+        WHERE  PGB.STD_CTG_NO = #{stdCtgNo}
+          AND  PGB.SALE_STAT_CD IN ('10', '20')
+    </select>
+
+    <select id="getStandardCategoryMgmtGoodsList" parameterType="com.aas.display.domain.repository.query.param.StandardCategoryMgmtQueryParam" resultType="com.aas.display.domain.repository.query.result.StandardCategoryGoodsQueryResult">
+        /* StandardCategoryQueryMyBatisDao.getStandardCategoryMgmtGoodsList */
+        SELECT PGB.GOODS_NO
+             , PGBM.GOODS_NM
+             , FN_GET_CODENAME('PR005', PGB.SALE_STAT_CD) AS SALE_STAT_CD_NM
+        FROM   PR_GOODS_BASE PGB
+                   INNER JOIN PR_GOODS_BASE_ML PGBM ON PGB.GOODS_NO = PGBM.GOODS_NO AND PGBM.LANG_CD = #{langCd}
+        WHERE  PGB.STD_CTG_NO = #{stdCtgNo}
+          AND  PGB.SALE_STAT_CD IN ('10', '20')
+        ORDER BY PGB.GOODS_NO DESC
+        LIMIT #{rowsPerPage} OFFSET (#{pageIdx} - 1) * #{rowsPerPage}
+    </select>
+
+    <select id="getStandardCategoryGoodsAttrListCount" parameterType="com.aas.display.domain.repository.query.param.StandardCategoryMgmtQueryParam" resultType="java.lang.Integer">
+        /* StandardCategoryQueryMyBatisDao.getStandardCategoryGoodsAttrListCount */
+        SELECT COUNT(1)
+        FROM   PR_STD_CTG_GOODS_ATT_INFO PSCGAI
+                   INNER JOIN PR_ATT_CD_INFO PACI ON PSCGAI.ATT_CD = PACI.ATT_CD
+                   INNER JOIN PR_ATT_CD_INFO_ML PACIM ON PACIM.ATT_CD = PSCGAI.ATT_CD AND PACIM.LANG_CD = #{langCd}
+        WHERE  PSCGAI.STD_CTG_NO = #{stdCtgNo}
+    </select>
+
+    <select id="getStandardCategoryGoodsAttrList" parameterType="com.aas.display.domain.repository.query.param.StandardCategoryMgmtQueryParam" resultType="com.aas.display.domain.repository.query.result.StandardCategoryAttrQueryResult">
+        /* StandardCategoryQueryMyBatisDao.getStandardCategoryGoodsAttrList */
+        SELECT PSCGAI.STD_CTG_NO
+             , PSCGAI.ATT_CD
+             , PACIM.ATT_NM
+             , PACI.ATT_VAL_TYP_CD
+             , FN_GET_CODENAME('PR043', PACI.ATT_VAL_TYP_CD) AS ATT_VAL_TYP_NM
+             , PSCGAI.DISP_SEQ
+             , PSCGAI.USE_YN
+             , PACI.ATT_CD_EXP_YN
+             , PSCGAI.SYS_MOD_ID
+             , PSCGAI.SYS_MOD_DTM
+        FROM   PR_STD_CTG_GOODS_ATT_INFO PSCGAI
+                   INNER JOIN PR_ATT_CD_INFO PACI ON PSCGAI.ATT_CD = PACI.ATT_CD
+                   INNER JOIN PR_ATT_CD_INFO_ML PACIM ON PACIM.ATT_CD = PSCGAI.ATT_CD AND PACIM.LANG_CD = #{langCd}
+        WHERE  PSCGAI.STD_CTG_NO = #{stdCtgNo}
+        ORDER BY PSCGAI.DISP_SEQ, PSCGAI.SYS_MOD_DTM DESC
+    </select>
+
+    <select id="getStandardCategoryDisplayListCount" parameterType="com.aas.display.domain.repository.query.param.StandardCategoryMgmtQueryParam" resultType="java.lang.Integer">
+        /* StandardCategoryQueryMyBatisDao.getStandardCategoryDisplayListCount */
+        SELECT COUNT(1)
+        FROM PR_STD_CTG_DISP_INFO PSCDI
+        WHERE PSCDI.STD_CTG_NO = #{stdCtgNo}
+          AND PSCDI.DEL_YN = 'N'
+    </select>
+
+    <select id="getAttInfoList" parameterType="java.util.Map" resultType="com.aas.display.domain.repository.query.result.StandardCategoryAttrQueryResult">
+        /* StandardCategoryQueryMyBatisDao.getAttInfoList */
+        SELECT PACI.ATT_CD
+             , PACIM.ATT_NM
+             , PACI.ATT_VAL_TYP_CD
+             , PACI.ATT_CD_EXP_YN
+             , FN_GET_CODENAME('PR043', PACI.ATT_VAL_TYP_CD) AS ATT_VAL_TYP_NM
+        FROM PR_ATT_CD_INFO PACI
+                 INNER JOIN PR_ATT_CD_INFO_ML PACIM ON PACIM.ATT_CD = PACI.ATT_CD AND PACIM.LANG_CD = #{langCd}
+        ORDER BY PACI.ATT_CD
+    </select>
+</mapper>

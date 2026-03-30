@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aas.goods.infrastructure.db.OptionMgmtCommandMyBatisDao">
+
+    <insert id="insertPrOptnClssCd" parameterType="com.aas.goods.domain.model.PrOptnClssCd">
+        /* OptionMgmtCommandRepository.insertPrOptnClssCd */
+        INSERT INTO pr_optn_clss_cd (
+            optn_cat_no, optn_cat_reg_gb_cd, optn_cat_typ_cd, sort_seq, use_yn, entr_no, 
+            sys_reg_id, sys_reg_dtm, sys_mod_id, sys_mod_dtm
+        ) VALUES (
+            #{optnCatNo}, #{optnCatRegGbCd}, #{optnCatTypCd}, #{sortSeq}, #{useYn}, #{entrNo}, 
+            #{sysRegId}, NOW(), #{sysModId}, NOW()
+        )
+    </insert>
+
+    <update id="updatePrOptnClssCd" parameterType="com.aas.goods.domain.model.PrOptnClssCd">
+        /* OptionMgmtCommandRepository.updatePrOptnClssCd */
+        UPDATE pr_optn_clss_cd
+        SET
+            sort_seq = #{sortSeq},
+            use_yn = #{useYn},
+            sys_mod_id = #{sysModId},
+            sys_mod_dtm = NOW()
+        WHERE optn_cat_no = #{optnCatNo}
+    </update>
+
+    <insert id="insertPrOptnCd" parameterType="com.aas.goods.domain.model.PrOptnCd">
+        /* OptionMgmtCommandRepository.insertPrOptnCd */
+        INSERT INTO pr_optn_cd (
+            optn_cat_no, optn_no, sort_seq, use_yn, img_path_nm, img_file_nm, rgb_val,
+            sys_reg_id, sys_reg_dtm, sys_mod_id, sys_mod_dtm
+        ) VALUES (
+            #{optnCatNo}, #{optnNo}, #{sortSeq}, #{useYn}, #{imgPathNm}, #{imgFileNm}, #{rgbVal},
+            #{sysRegId}, NOW(), #{sysModId}, NOW()
+        )
+    </insert>
+
+    <update id="updatePrOptnCd" parameterType="com.aas.goods.domain.model.PrOptnCd">
+        /* OptionMgmtCommandRepository.updatePrOptnCd */
+        UPDATE pr_optn_cd
+        SET
+            sort_seq = #{sortSeq},
+            use_yn = #{useYn},
+            img_path_nm = #{imgPathNm},
+            img_file_nm = #{imgFileNm},
+            rgb_val = #{rgbVal},
+            sys_mod_id = #{sysModId},
+            sys_mod_dtm = NOW()
+        WHERE optn_cat_no = #{optnCatNo}
+          AND optn_no = #{optnNo}
+    </update>
+</mapper>

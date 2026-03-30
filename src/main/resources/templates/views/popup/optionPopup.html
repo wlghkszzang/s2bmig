@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/popup-layout}">
+<body>
+<th:block layout:fragment="popup-title-area">
+    <div class="title-area">
+        <h1>옵션분류 조회</h1>
+    </div>
+</th:block>
+
+<th:block layout:fragment="popup-search-area">
+    <div class="search" style="margin-bottom: 20px;">
+        <form name="optionPopupCategoryListGridForm" id="optionPopupCategoryListGridForm">
+            <input type="hidden" th:name="_csrf" th:value="${_csrf?.token}"/>
+            <table class="search-table">
+                <colgroup>
+                    <col width="120">
+                    <col>
+                    <col width="120">
+                    <col>
+                </colgroup>
+                <tbody>
+                <tr style="display: none">
+                    <td class="label">협력사번호</td>
+                    <td colspan="3">
+                        <input type="text" th:value="${entrNo}" id="entrNo" name="entrNo" disabled>
+                    </td>
+                </tr>
+                <tr style="display: none">
+                    <td class="label">옵션분류번호</td>
+                    <td colspan="3">
+                        <input type="text" th:value="${optnCatNo}" id="optnCatNo" name="optnCatNo" disabled>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="label">분류유형</td>
+                    <td>
+                        <select class="form-control w50" id="condxOptnCatTypCd" name="condxOptnCatTypCd">
+                            <option value="">전체</option>
+                            <option th:each="list : ${codeList.PR019}" th:value="${list?.cd}" th:utext="${list?.cdNm}" />
+                        </select>
+                    </td>
+                    <td class="label">사용여부</td>
+                    <td>
+                        <select class="form-control w50" id="condxUseYn" name="condxUseYn">
+                            <option value="">전체</option>
+                            <option value="Y" selected>사용</option>
+                            <option value="N">사용안함</option>
+                        </select>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+            
+            <div class="button-group search-btn dev-search-btn" style="text-align: center; margin-top: 10px;">
+                <a href="#" class="button white" id="btn_init">초기화</a>
+                <a href="#" class="button dark" id="btn_search">검색</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- 옵션분류코드목록 1단계만 유지 -->
+    <div class="grid-cont">
+        <div class="grid">
+            <div class="grid-head">
+                <div class="title-area">
+                    <h2 class="title" style="font-size: 16px; font-weight: bold; margin-bottom: 10px;">옵션분류 목록 (1단계 단일 선택)</h2>
+                </div>
+            </div>
+            <div class="grid-body with-head vh5">
+                <div id="optionPopupCategoryListGrid" style="height: 350px;"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="button-group" style="text-align: center; margin-top: 20px;">
+        <a href="#" class="button large" id="btn_apply_option" style="background: #2a3f5f; color: #fff;">확인 (적용)</a>
+        <a href="#" class="button large white" id="btn_close_popup" style="border: 1px solid #ccc;">취소 (닫기)</a>
+    </div>
+</th:block>
+
+<th:block layout:fragment="add-script">
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        var rawCodeList = /*[[${codeList}]]*/ {};
+        
+        window._optnCatRegGbCd_select = {};
+        if (rawCodeList && rawCodeList.PR018) {
+            rawCodeList.PR018.forEach(function(item) {
+                window._optnCatRegGbCd_select[item.cd] = item.cdNm;
+            });
+        }
+        
+        window._optnCatTypCd_select = {};
+        if (rawCodeList && rawCodeList.PR019) {
+            rawCodeList.PR019.forEach(function(item) {
+                window._optnCatTypCd_select[item.cd] = item.cdNm;
+            });
+        }
+        /*]]>*/
+    </script>
+    <script type="text/javascript" src="/js/popup/optionPopupCategoryListGrid.js"></script>
+</th:block>
+</body>
+</html>

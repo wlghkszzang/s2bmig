@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layouts/popup-layout}">
+
+<body>
+    <th:block layout:fragment="popup-title-area">
+        <div class="title-area">
+            <h1>속성 정보 조회</h1>
+        </div>
+    </th:block>
+
+    <th:block layout:fragment="popup-search-area">
+        <div style="padding: 15px; min-width: 700px;">
+            <div class="grid-cont">
+            <div class="grid">
+                <div class="grid-head">
+                    <div class="title-area">
+                        <h2 class="title" style="font-size: 16px; font-weight: bold; margin-bottom: 10px;">속성 목록</h2>
+                    </div>
+                </div>
+                <div class="grid-body with-head vh5">
+                    <div id="attCdInfoPopupGrid" style="height: 400px;"></div>
+                </div>
+            </div>
+        </div>
+
+        </div>
+
+        <div class="button-group" style="text-align: center; margin-top: 30px; padding-bottom: 20px;">
+            <a href="#" class="button large" id="btn_apply" style="background: #2a3f5f; color: #fff; padding: 10px 30px;">적용</a>
+            <a href="#" class="button large white" id="btn_close" style="border: 1px solid #ccc; padding: 10px 30px;">닫기</a>
+        </div>
+    </div>
+    </th:block>
+
+    <th:block layout:fragment="add-script">
+        <script th:inline="javascript">
+            /*<![CDATA[*/
+            var rawCodeList = /*[[${codeList}]]*/ {};
+
+            window._attValTypCd_select = {};
+            if (rawCodeList && rawCodeList.PR043) {
+                rawCodeList.PR043.forEach(function (item) {
+                    window._attValTypCd_select[item.cd] = item.cdNm;
+                });
+            }
+            /*]]>*/
+        </script>
+        <script type="text/javascript" src="/js/popup/display/attCdInfoPopup.js"></script>
+    </th:block>
+</body>
+
+</html>

@@ -1,0 +1,41 @@
+server:
+  port: 8080
+
+spring:
+  application:
+# Line 9 was empty space, keeping it for structure if needed or just cleaning up.
+    name: migproject
+  
+  # 데이터베이스 연결 정보
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://db-x2bee-dev-instance-1.cvls6ttu2e2u.ap-northeast-2.rds.amazonaws.com:5432/venus_main?currentSchema=venus_main
+    username: venus_main
+    password: plateer001!
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 3000
+
+  # Thymeleaf 프론트엔드 SSR 뷰 연결
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    cache: false
+    mode: HTML
+
+# MyBatis 매퍼 경로 및 설정
+mybatis:
+  mapper-locations: classpath:mybatis/mapper/**/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+    call-setters-on-nulls: true
+    jdbc-type-for-null: null
+
+# 로그 설정 (테스트용)
+logging:
+  level:
+    root: INFO
+    com.aas: DEBUG
+    org.springframework.web: INFO
+    org.mybatis: DEBUG

@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aas.display.infrastructure.db.DisplayCategoryCommandMyBatisDao">
+
+    <insert id="insertPrDispCtgBase" parameterType="com.aas.display.domain.entity.PrDispCtg">
+        <selectKey keyProperty="dispCtgNo" resultType="String" order="BEFORE">
+            SELECT NEXTVAL('PR_DISP_CTG_BASE_SQ01') AS dispCtgNo
+        </selectKey>
+        /* DisplayCategoryCommandMyBatisDao.insertPrDispCtgBase */
+        INSERT INTO PR_DISP_CTG_BASE (
+            DISP_CTG_NO
+            , SITE_NO
+            , DPML_NO
+            , DISP_SEQ
+            , USE_YN
+            , UPR_DISP_CTG_NO
+            , LRG_CTG_NO
+            , MID_CTG_NO
+            , SML_CTG_NO
+            , THN_CTG_NO
+            , LEAF_YN
+            , SYS_REG_ID
+            , SYS_REG_DTM
+            , SYS_MOD_ID
+            , SYS_MOD_DTM
+        ) VALUES (
+            #{dispCtgNo}
+            , #{siteNo}
+            , #{dpmlNo}
+            , #{dispSeq}
+            , #{useYn}
+            , #{uprDispCtgNo}
+            , #{lrgCtgNo}
+            , #{midCtgNo}
+            , #{smlCtgNo}
+            , #{thnCtgNo}
+            , #{leafYn}
+            , #{sysRegId}
+            , NOW()
+            , #{sysModId}
+            , NOW()
+        )
+    </insert>
+
+    <update id="updatePrDispCtgBaseDispCtgNo" parameterType="com.aas.display.domain.entity.PrDispCtg">
+        /* DisplayCategoryCommandMyBatisDao.updatePrDispCtgBaseDispCtgNo */
+        UPDATE PR_DISP_CTG_BASE
+        SET
+            LRG_CTG_NO = #{lrgCtgNo}
+            , MID_CTG_NO = #{midCtgNo}
+            , SML_CTG_NO = #{smlCtgNo}
+            , THN_CTG_NO = #{thnCtgNo}
+            , SYS_MOD_ID = #{sysModId}
+            , SYS_MOD_DTM = NOW()
+        WHERE DISP_CTG_NO = #{dispCtgNo}
+    </update>
+
+    <update id="updatePrDispCtgBaseDispCtgNoList" parameterType="java.util.List">
+        <foreach collection="list" item="item" separator=";">
+            UPDATE PR_DISP_CTG_BASE
+            SET
+                LRG_CTG_NO = #{item.lrgCtgNo}
+                , MID_CTG_NO = #{item.midCtgNo}
+                , SML_CTG_NO = #{item.smlCtgNo}
+                , THN_CTG_NO = #{item.thnCtgNo}
+                , SYS_MOD_ID = #{item.sysModId}
+                , SYS_MOD_DTM = NOW()
+            WHERE DISP_CTG_NO = #{item.dispCtgNo}
+        </foreach>
+    </update>
+
+    <insert id="insertPrDispCtgBaseMl" parameterType="com.aas.display.domain.entity.PrDispCtg">
+        /* DisplayCategoryCommandMyBatisDao.insertPrDispCtgBaseMl */
+        INSERT INTO PR_DISP_CTG_BASE_ML (
+            DISP_CTG_NO
+            , DISP_CTG_NM
+            , LANG_CD
+            , SYS_REG_ID
+            , SYS_REG_DTM
+            , SYS_MOD_ID
+            , SYS_MOD_DTM
+        ) VALUES (
+            #{dispCtgNo}
+            , #{dispCtgNm}
+            , #{langCd}
+            , #{sysRegId}
+            , NOW()
+            , #{sysModId}
+            , NOW()
+        )
+        ON CONFLICT (DISP_CTG_NO, LANG_CD)
+        DO UPDATE SET
+            DISP_CTG_NM = EXCLUDED.DISP_CTG_NM
+            , SYS_MOD_ID = EXCLUDED.SYS_MOD_ID
+            , SYS_MOD_DTM = NOW()
+    </insert>
+
+    <insert id="insertPrDispCtgBaseMlList" parameterType="java.util.List">
+        <foreach collection="list" item="item" separator=";">
+            INSERT INTO PR_DISP_CTG_BASE_ML (
+                DISP_CTG_NO
+                , DISP_CTG_NM
+                , LANG_CD
+                , SYS_REG_ID
+                , SYS_REG_DTM
+                , SYS_MOD_ID
+                , SYS_MOD_DTM
+            ) VALUES (
+                #{item.dispCtgNo}
+                , #{item.dispCtgNm}
+                , #{item.langCd}
+                , #{item.sysRegId}
+                , NOW()
+                , #{item.sysModId}
+                , NOW()
+            )
+            ON CONFLICT (DISP_CTG_NO, LANG_CD)
+            DO UPDATE SET
+                DISP_CTG_NM = EXCLUDED.DISP_CTG_NM
+                , SYS_MOD_ID = EXCLUDED.SYS_MOD_ID
+                , SYS_MOD_DTM = NOW()
+        </foreach>
+    </insert>
+
+    <update id="updatePrDispCtgBaseDetail" parameterType="com.aas.display.domain.entity.PrDispCtg">
+        /* DisplayCategoryCommandMyBatisDao.updatePrDispCtgBaseDetail */
+        UPDATE PR_DISP_CTG_BASE
+        SET
+            DISP_SEQ = #{dispSeq}
+            , USE_YN = #{useYn}
+            , LEAF_YN = #{leafYn}
+            , YES24_CTG_CD = #{yes24CtgCd}
+            , SYS_MOD_ID = #{sysModId}
+            , SYS_MOD_DTM = NOW()
+        WHERE DISP_CTG_NO = #{dispCtgNo}
+    </update>
+
+    <update id="updatePrDispCtgBaseMl" parameterType="com.aas.display.domain.entity.PrDispCtg">
+        /* DisplayCategoryCommandMyBatisDao.updatePrDispCtgBaseMl */
+        UPDATE PR_DISP_CTG_BASE_ML
+        SET
+            DISP_CTG_NM = #{dispCtgNm}
+            , SYS_MOD_ID = #{sysModId}
+            , SYS_MOD_DTM = NOW()
+        WHERE DISP_CTG_NO = #{dispCtgNo}
+        AND LANG_CD = #{langCd}
+    </update>
+
+    <update id="updatePrDispCtgBaseList" parameterType="java.util.List">
+        <foreach collection="list" item="item" separator=";">
+            UPDATE PR_DISP_CTG_BASE
+            SET
+                DISP_SEQ = #{item.dispSeq}
+                , USE_YN = #{item.useYn}
+                , LEAF_YN = #{item.leafYn}
+                , SYS_MOD_ID = #{item.sysModId}
+                , SYS_MOD_DTM = NOW()
+            WHERE DISP_CTG_NO = #{item.dispCtgNo}
+        </foreach>
+    </update>
+
+    <update id="updatePrDispCtgBaseMlList" parameterType="java.util.List">
+        <foreach collection="list" item="item" separator=";">
+            UPDATE PR_DISP_CTG_BASE_ML
+            SET
+                DISP_CTG_NM = #{item.dispCtgNm}
+                , SYS_MOD_ID = #{item.sysModId}
+                , SYS_MOD_DTM = NOW()
+            WHERE DISP_CTG_NO = #{item.dispCtgNo}
+            AND LANG_CD = #{item.langCd}
+        </foreach>
+    </update>
+
+    <delete id="deletePrDispCtgBaseList" parameterType="java.util.List">
+        DELETE FROM PR_DISP_CTG_BASE
+        WHERE DISP_CTG_NO IN
+        <foreach collection="list" item="item" open="(" close=")" separator=",">
+            #{item.dispCtgNo}
+        </foreach>
+    </delete>
+
+    <delete id="deletePrDispCtgBaseMlList" parameterType="java.util.List">
+        DELETE FROM PR_DISP_CTG_BASE_ML
+        WHERE DISP_CTG_NO IN
+        <foreach collection="list" item="item" open="(" close=")" separator=",">
+            #{item.dispCtgNo}
+        </foreach>
+    </delete>
+
+    <!-- Goods -->
+    <insert id="insertPrDispGoodsInfoList" parameterType="java.util.List">
+        <foreach collection="list" item="item" separator=";">
+            INSERT INTO PR_DISP_GOODS_INFO (
+                DISP_CTG_NO
+                , GOODS_NO
+                , DISP_YN
+                , SYS_REG_ID
+                , SYS_REG_DTM
+                , SYS_MOD_ID
+                , SYS_MOD_DTM
+            ) VALUES (
+                #{item.dispCtgNo}
+                , #{item.goodsNo}
+                , #{item.dispYn}
+                , #{item.sysRegId}
+                , NOW()
+                , #{item.sysModId}
+                , NOW()
+            )
+            ON CONFLICT (DISP_CTG_NO, GOODS_NO) DO NOTHING
+        </foreach>
+    </insert>
+
+    <update id="updatePrDispGoodsInfoList" parameterType="java.util.List">
+        <foreach collection="list" item="item" separator=";">
+            UPDATE PR_DISP_GOODS_INFO
+            SET
+                DISP_YN = #{item.dispYn}
+                , SYS_MOD_ID = #{item.sysModId}
+                , SYS_MOD_DTM = NOW()
+            WHERE DISP_CTG_NO = #{item.dispCtgNo}
+            AND GOODS_NO = #{item.goodsNo}
+        </foreach>
+    </update>
+
+    <delete id="deletePrDispGoodsInfoList" parameterType="com.aas.display.domain.entity.PrDispCtg$GoodsInfo">
+        DELETE FROM PR_DISP_GOODS_INFO
+        WHERE DISP_CTG_NO = #{dispCtgNo}
+        AND GOODS_NO IN
+        <foreach collection="goodsList" item="item" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+    </delete>
+
+</mapper>
