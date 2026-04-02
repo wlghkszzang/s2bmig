@@ -4,10 +4,8 @@
 var StandardCategoryMgmt = {
     gridId: "childGrid",
     attrGridId: "attrGrid",
-    goodsGridId: "goodsGrid",
     myGrid: null,
     attrGrid: null,
-    goodsGrid: null,
     zTreeObj: null,
 
     init: function () {
@@ -63,13 +61,6 @@ var StandardCategoryMgmt = {
             }
         ];
 
-        // 3. Product List Grid
-        var goodsColumnLayout = [
-            { dataField: "goodsNo", headerText: "상품번호", width: 120, editable: false },
-            { dataField: "goodsNm", headerText: "상품명", width: 350, style: "left-text", editable: false },
-            { dataField: "saleStatCdNm", headerText: "판매상태", width: 120, editable: false }
-        ];
-
         var gridProps = {
             editable: true,
             headerHeight: 40,
@@ -82,7 +73,6 @@ var StandardCategoryMgmt = {
 
         this.myGrid = AUIGrid.create("#" + this.gridId, childColumnLayout, gridProps);
         this.attrGrid = AUIGrid.create("#" + this.attrGridId, attrColumnLayout, gridProps);
-        this.goodsGrid = AUIGrid.create("#" + this.goodsGridId, goodsColumnLayout, { ...gridProps, editable: false });
     },
 
     loadTree: function () {
@@ -117,12 +107,10 @@ var StandardCategoryMgmt = {
                         document.getElementById("childCategoryGridSection").style.display = "none";
                         document.getElementById("leafNodeGridSection").style.display = "flex";
                         _this.loadAttrGrid(treeNode.stdCtgNo);
-                        _this.loadGoodsGrid(treeNode.stdCtgNo);
 
                         // Force AUIGrid to recalculate layout after making container visible
                         setTimeout(function () {
                             AUIGrid.resize(_this.attrGrid);
-                            AUIGrid.resize(_this.goodsGrid);
                         }, 50);
                     } else {
                         // Show child category grid, hide leaf grids
@@ -244,22 +232,6 @@ var StandardCategoryMgmt = {
             .catch(function (err) {
                 AUIGrid.removeAjaxLoader(_this.attrGrid);
                 console.warn("Attr Grid loading failed:", err);
-            });
-    },
-
-    loadGoodsGrid: function (stdCtgNo) {
-        var _this = this;
-        AUIGrid.showAjaxLoader(this.goodsGrid);
-        axios.get("/api/v1/display/standardCategoryMgmt/getStandardCategoryMgmtGoodsList.do", { params: { stdCtgNo: stdCtgNo } })
-            .then(function (res) {
-                AUIGrid.removeAjaxLoader(_this.goodsGrid);
-                if (res.data && res.data.success) {
-                    AUIGrid.setGridData(_this.goodsGrid, res.data.data || []);
-                }
-            })
-            .catch(function (err) {
-                AUIGrid.removeAjaxLoader(_this.goodsGrid);
-                console.error("Goods Grid loading error:", err);
             });
     },
 
@@ -423,7 +395,6 @@ var StandardCategoryMgmt = {
         // Excel Buttons
         document.getElementById("btnExcelChild").addEventListener("click", function () { _this.exportToExcel(_this.myGrid); });
         document.getElementById("btnExcelAttr").addEventListener("click", function () { _this.exportToExcel(_this.attrGrid); });
-        document.getElementById("btnExcelGoods").addEventListener("click", function () { _this.exportToExcel(_this.goodsGrid); });
 
         // Reset Buttons
         document.getElementById("btnResetGrid").addEventListener("click", function () {
