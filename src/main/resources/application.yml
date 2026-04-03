@@ -26,7 +26,7 @@ spring:
 
 # MyBatis 매퍼 경로 및 설정
 mybatis:
-  mapper-locations: classpath:mybatis/mapper/**/*.xml
+  mapper-locations: classpath:mybatis/mapper/**/*.xml, classpath:mapper/**/*.xml
   configuration:
     map-underscore-to-camel-case: true
     call-setters-on-nulls: true
