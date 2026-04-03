@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aas.display.domain.repository.StandardDisplayCategoryConnectCommandRepository">
+
+    <!-- ?좉퇋 ?곌껐 ?뺣낫 ???(PostgreSQL ON CONFLICT 吏?? -->
+    <insert id="insertConnectList" parameterType="java.util.List">
+        /* StandardDisplayCategoryConnectCommandRepository.insertConnectList */
+        <foreach collection="list" item="item" separator=";">
+            INSERT INTO PR_STD_CTG_DISP_INFO (
+                  STD_CTG_NO
+                , DISP_CTG_NO
+                , REP_CTG_YN
+                , USE_YN
+                , SITE_NO
+                , DPML_NO
+                , DEL_YN
+                , SYS_REG_ID
+                , SYS_REG_DTM
+                , SYS_MOD_ID
+                , SYS_MOD_DTM
+            ) VALUES (
+                  #{item.stdCtgNo}
+                , #{item.dispCtgNo}
+                , COALESCE(#{item.repCtgYn}, 'N')
+                , COALESCE(#{item.useYn}, 'Y')
+                , #{item.siteNo}
+                , #{item.dpmlNo}
+                , 'N'
+                , COALESCE(#{item.sysRegId}, 'admin')
+                , NOW()
+                , COALESCE(#{item.sysModId}, 'admin')
+                , NOW()
+            )
+            ON CONFLICT (STD_CTG_NO, DISP_CTG_NO)
+            DO UPDATE SET
+                  REP_CTG_YN = EXCLUDED.REP_CTG_YN
+                , USE_YN     = EXCLUDED.USE_YN
+                , DEL_YN     = 'N'
+                , SYS_MOD_ID = EXCLUDED.SYS_MOD_ID
+                , SYS_MOD_DTM = NOW()
+        </foreach>
+    </insert>
+
+    <!-- 湲곗〈 ?곌껐 ?뺣낫 ?섏젙 -->
+    <update id="updateConnectList" parameterType="java.util.List">
+        /* StandardDisplayCategoryConnectCommandRepository.updateConnectList */
+        <foreach collection="list" item="item" separator=";">
+            UPDATE PR_STD_CTG_DISP_INFO
+            SET    REP_CTG_YN = #{item.repCtgYn}
+                 , USE_YN     = #{item.useYn}
+                 , SYS_MOD_ID = COALESCE(#{item.sysModId}, 'admin')
+                 , SYS_MOD_DTM = NOW()
+            WHERE  STD_CTG_NO  = #{item.stdCtgNo}
+              AND  DISP_CTG_NO = #{item.dispCtgNo}
+        </foreach>
+    </update>
+
+    <!-- ?곌껐 ?뺣낫 ??젣 (?쇰━ ??젣) -->
+    <update id="deleteConnectList" parameterType="java.util.List">
+        /* StandardDisplayCategoryConnectCommandRepository.deleteConnectList */
+        <foreach collection="list" item="item" separator=";">
+            UPDATE PR_STD_CTG_DISP_INFO
+            SET    DEL_YN      = 'Y'
+                 , SYS_MOD_ID  = COALESCE(#{item.sysModId}, 'admin')
+                 , SYS_MOD_DTM = NOW()
+            WHERE  STD_CTG_NO  = #{item.stdCtgNo}
+              AND  DISP_CTG_NO = #{item.dispCtgNo}
+        </foreach>
+    </update>
+
+</mapper>

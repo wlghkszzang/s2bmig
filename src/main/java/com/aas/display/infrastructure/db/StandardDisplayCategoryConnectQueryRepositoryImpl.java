@@ -2,6 +2,7 @@ package com.aas.display.infrastructure.db;
 
 import com.aas.display.domain.model.StandardDisplayCategoryConnectQueryParam;
 import com.aas.display.domain.repository.StandardDisplayCategoryConnectQueryRepository;
+import com.aas.display.interfaces.dto.rsp.StandardDisplayCategoryConnectRspDto;
 import lombok.RequiredArgsConstructor;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.stereotype.Repository;
@@ -16,7 +17,7 @@ public class StandardDisplayCategoryConnectQueryRepositoryImpl implements Standa
     private static final String NAMESPACE = "com.aas.display.domain.repository.StandardDisplayCategoryConnectQueryRepository.";
 
     @Override
-    public List<Object> selectConnectList(StandardDisplayCategoryConnectQueryParam param) {
+    public List<StandardDisplayCategoryConnectRspDto> selectConnectList(StandardDisplayCategoryConnectQueryParam param) {
         return sqlSessionTemplate.selectList(NAMESPACE + "selectConnectList", param);
     }
 }

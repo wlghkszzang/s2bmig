@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layouts/popup-layout}">
+
+<body>
+    <th:block layout:fragment="popup-title-area">
+        <div class="title-area">
+            <h1 style="border-bottom: 0px; margin-bottom: 0px; padding-bottom: 0px;">전시 카테고리 조회</h1>
+        </div>
+    </th:block>
+
+    <th:block layout:fragment="popup-search-area">
+        <div style="padding: 10px 20px; display: flex; flex-direction: column; gap: 15px; height: calc(100vh - 80px);">
+
+            <!-- Dropdowns -->
+            <div style="display: flex; gap: 10px;">
+                <select id="siteNo" class="form-control"
+                    style="width: 140px; border-radius: 6px; padding: 8px 12px; font-size: 13px; color: #4b5563;">
+                    <option value="">전체</option>
+                    <th:block th:each="list : ${siteList}">
+                        <option th:value="${list.siteNo}" th:text="${list.siteNm}"
+                            th:selected="${list.siteNo == argSiteNo}"></option>
+                    </th:block>
+                </select>
+                <select id="dpmlNo" class="form-control"
+                    style="width: 140px; border-radius: 6px; padding: 8px 12px; font-size: 13px; color: #4b5563;">
+                    <option value="">통합몰</option>
+                    <th:block th:if="${mallList != null}">
+                        <option th:each="list : ${mallList}" th:value="${list.dpmlNo}" th:text="${list.dpmlNm}"
+                            th:selected="${list.dpmlNo == argDpmlNo}"></option>
+                    </th:block>
+                </select>
+                <select id="useYn" class="form-control"
+                    style="width: 140px; border-radius: 6px; padding: 8px 12px; font-size: 13px; color: #4b5563;">
+                    <option value="">전체</option>
+                    <option value="Y">전시</option>
+                    <option value="N">미전시</option>
+                </select>
+            </div>
+
+            <!-- Tree Area -->
+            <div class="tree-container"
+                style="flex: 1; border: 1px solid #e2e8f0; border-radius: 8px; overflow: auto; padding: 15px; background: #fff;">
+                <ul id="categoryTreePopup" class="ztree"></ul>
+            </div>
+
+            <!-- Button Area -->
+            <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 20px;">
+                <a href="#" class="button white" id="btn_popup_close"
+                    style="padding: 10px 30px; border-radius: 8px; border: 1px solid #d1d5db; color: #4b5563; font-weight: 600; text-decoration: none;">닫기</a>
+                <a href="#" class="button dark" id="btn_popup_apply"
+                    style="padding: 10px 30px; border-radius: 8px; border: 1px solid #bfdbfe; background-color: #eff6ff; color: #2563eb; font-weight: 600; text-decoration: none;">적용</a>
+            </div>
+        </div>
+    </th:block>
+
+    <th:block layout:fragment="add-script">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ztree@3.5.24/css/zTreeStyle/zTreeStyle.css">
+        <style>
+            .ztree * {
+                font-family: 'Inter', sans-serif !important;
+                font-size: 13.5px !important;
+            }
+
+            .ztree li {
+                margin: 4px 0;
+            }
+
+            .ztree li a {
+                height: 26px !important;
+                display: inline-flex !important;
+                align-items: center;
+                color: #6b7280;
+                text-decoration: none !important;
+            }
+
+            .ztree li a:hover {
+                color: #3b82f6 !important;
+            }
+
+            .ztree li a.curSelectedNode {
+                background: #eff6ff !important;
+                color: #2563eb !important;
+                border: none;
+                font-weight: 600;
+                padding: 0 4px;
+                border-radius: 4px;
+            }
+
+            .ztree li span.button.ico_open,
+            .ztree li span.button.ico_close,
+            .ztree li span.button.ico_docu {
+                background: none !important;
+                width: 20px;
+                height: 20px;
+                display: inline-flex;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .ztree li span.button.ico_open::before,
+            .ztree li span.button.ico_close::before {
+                content: '📁';
+                color: #6b7280;
+                font-size: 16px;
+                opacity: 0.8;
+            }
+
+            .ztree li span.button.ico_docu::before {
+                content: '📄';
+                color: #9ca3af;
+                font-size: 16px;
+                opacity: 0.8;
+            }
+
+            /* Checkbox fallback styling: only show for active checkboxes */
+            .ztree li span.button.chk {
+                width: 16px !important;
+                height: 16px !important;
+                margin-right: 5px;
+                cursor: pointer;
+                display: none;
+                /* Default to hidden */
+            }
+
+            .ztree li span.button.chk.checkbox_false_full,
+            .ztree li span.button.chk.checkbox_true_full,
+            .ztree li span.button.chk.checkbox_false_full_focus,
+            .ztree li span.button.chk.checkbox_true_full_focus {
+                display: inline-block !important;
+                border: 1px solid #d1d5db;
+                border-radius: 3px;
+                background-color: #fff;
+            }
+
+            .ztree li span.button.chk.checkbox_true_full,
+            .ztree li span.button.chk.checkbox_true_full_focus {
+                background-color: #2563eb;
+                border-color: #2563eb;
+                position: relative;
+            }
+
+            .ztree li span.button.chk.checkbox_true_full::after {
+                content: '✓';
+                color: white;
+                font-size: 11px;
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+            }
+
+            .ztree li span.button.chk.checkbox_false_full_focus {
+                border-color: #3b82f6;
+            }
+
+            /* Grey out text if leafYn != Y */
+            .none-leaf-node {
+                color: #d1d5db !important;
+                pointer-events: none;
+            }
+
+            /* Force hide checkboxes for non-leaf nodes (fallback logic) */
+            .ztree li span.button.chk.checkbox_false_disable,
+            .ztree li span.button.chk.checkbox_true_disable {
+                display: none !important;
+            }
+        </style>
+
+        <script src="https://cdn.jsdelivr.net/npm/ztree@3.5.24/js/jquery.ztree.all.min.js"></script>
+        <script th:inline="javascript">
+            /*<![CDATA[*/
+            var argSelectType = /*[[${argSelectType}]]*/ 'N';
+            /*]]>*/
+        </script>
+        <script type="text/javascript" src="/js/popup/display/displayCategoryListPopup.js"></script>
+    </th:block>
+</body>
+
+</html>

@@ -1,9 +1,8 @@
-package com.aas.display.domain.repository;
-
+import com.aas.display.interfaces.dto.req.StandardDisplayCategoryConnectCudDto;
 import java.util.List;
 
 public interface StandardDisplayCategoryConnectCommandRepository {
-    void insertConnectList(List<Object> createList);
-    void updateConnectList(List<Object> updateList);
-    void deleteConnectList(List<Object> deleteList);
+    void insertConnectList(List<StandardDisplayCategoryConnectCudDto> createList);
+    void updateConnectList(List<StandardDisplayCategoryConnectCudDto> updateList);
+    void deleteConnectList(List<StandardDisplayCategoryConnectCudDto> deleteList);
 }

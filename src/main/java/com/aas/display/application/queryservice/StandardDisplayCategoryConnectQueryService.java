@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.stream.Collectors;
 import java.util.List;
 
 @Service
@@ -22,11 +21,6 @@ public class StandardDisplayCategoryConnectQueryService {
         StandardDisplayCategoryConnectQueryParam param = new StandardDisplayCategoryConnectQueryParam();
         param.setStdCtgNo(reqDto.getStdCtgNo());
 
-        List<Object> rawList = queryRepository.selectConnectList(param);
-        
-        return rawList.stream().map(obj -> {
-            StandardDisplayCategoryConnectRspDto dto = (StandardDisplayCategoryConnectRspDto) obj;
-            return dto;
-        }).collect(Collectors.toList());
+        return queryRepository.selectConnectList(param);
     }
 }

@@ -112,4 +112,14 @@ public class DisplayCategoryRestController {
         commandService.saveSubCategoryMultiLanguage(command);
         return RspDto.ok(null);
     }
+
+    /**
+     * 紐?紐⑸줉 議고쉶
+     */
+    @Operation(summary = "紐?紐⑸줉 議고쉶", description = "?뱀젙 ?ъ씠?몄뿉 ?깅줉???꾩떆紐?紐⑸줉??議고쉶??")
+    @GetMapping("/getMallList.do")
+    public RspDto<List<com.aas.display.domain.repository.query.result.PrDpmlBaseQueryResult>> getMallList(@RequestParam String siteNo) {
+        List<com.aas.display.domain.repository.query.result.PrDpmlBaseQueryResult> mallList = queryService.getMallList(siteNo);
+        return RspDto.ok(mallList);
+    }
 }
