@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layout/default}">
+
+<head>
+    <title>표준분류 & 전시카테고리 연결 관리</title>
+    <th:block layout:fragment="head">
+        <!-- CSS and JS references -->
+        <link rel="stylesheet" th:href="@{/js/AUIGrid/AUIGrid_style.css}">
+        <!-- zTree CSS -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/zTree.v3/3.5.40/css/zTreeStyle/zTreeStyle.min.css">
+        <style>
+            :root { --primary-color: #3b82f6; --bg-color: #f1f5f9; --border-color: #e2e8f0; --header-bg: #f8fafc; }
+            body { background-color: var(--bg-color); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow-x: hidden; }
+            .page-header { margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
+            .page-header h1 { font-size: 20px; font-weight: 700; color: #1e293b; margin: 0; }
+            .content-container { display: flex; gap: 20px; align-items: flex-start; min-height: 800px; }
+            
+            .tree-panel { width: 350px; min-width: 350px; background: #fff; border: 1px solid var(--border-color); border-radius: 12px; padding: 0; display: flex; flex-direction: column; height: 800px; overflow: hidden; }
+            .panel-header {
+                padding: 18px 20px;
+                border-bottom: 1px solid #f1f5f9;
+                background: linear-gradient(to right, #ffffff, #f8fafc);
+                border-radius: 12px 12px 0 0;
+            }
+
+            .panel-header h3 {
+                font-size: 14px;
+                color: #1e293b;
+                margin: 0;
+                font-weight: 700;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .panel-header h3::before {
+                content: '📂';
+                font-size: 16px;
+            }
+
+            /* Modernized ZTree with Premium Look */
+            .ztree-wrap {
+                flex: 1;
+                overflow: auto;
+                padding: 10px 15px;
+            }
+
+            .ztree * {
+                font-family: 'Inter', 'Outfit', sans-serif !important;
+                font-size: 13.5px !important;
+                padding: 0;
+                margin: 0;
+                list-style: none !important;
+            }
+
+            .ztree li {
+                padding: 1px 0;
+                line-height: normal;
+                background: none !important;
+            }
+
+            /* Indentation & Hierarchical Lines */
+            .ztree li ul {
+                padding-left: 18px;
+                margin-left: 8px;
+                border-left: 1px solid #e2e8f0;
+                margin-top: 2px;
+                margin-bottom: 2px;
+            }
+
+            .ztree li a {
+                padding: 6px 10px;
+                height: 38px !important;
+                color: #475569 !important;
+                text-decoration: none;
+                border: none !important;
+                border-radius: 8px;
+                transition: all 0.2s ease;
+                display: inline-flex !important;
+                align-items: center;
+                width: calc(100% - 35px);
+                cursor: pointer;
+            }
+
+            /* Depth Specific Styling */
+            .ztree li.level0>a {
+                font-weight: 800;
+                color: #0f172a !important;
+                font-size: 14.5px !important;
+                background-color: #f8fafc;
+                margin-bottom: 3px;
+                border: 1px solid #f1f5f9 !important;
+            }
+
+            .ztree li.level1>a {
+                font-weight: 700;
+                color: #334155 !important;
+            }
+
+            .ztree li.level2>a {
+                font-weight: 500;
+                color: #475569 !important;
+            }
+
+            .ztree li.level3>a {
+                font-weight: 400;
+                color: #64748b !important;
+            }
+
+            .ztree li a:hover {
+                background-color: #f1f5f9 !important;
+                color: #2563eb !important;
+                transform: translateX(2px);
+            }
+
+            .ztree li a.curSelectedNode {
+                background-color: #eff6ff !important;
+                color: #2563eb !important;
+                font-weight: 700 !important;
+                box-shadow: inset 3px 0 0 #2563eb;
+            }
+
+            /* Buttons & Switches Cleanup */
+            .ztree li span.button {
+                background-image: none !important;
+                background: none !important;
+                width: 22px;
+                height: 22px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                vertical-align: middle;
+            }
+
+            /* Custom Arrow Indicators */
+            .ztree li span.button.switch {
+                margin-right: 4px;
+                cursor: pointer;
+            }
+
+            .ztree li span.button.root_open::before,
+            .ztree li span.button.roots_open::before,
+            .ztree li span.button.center_open::before,
+            .ztree li span.button.bottom_open::before {
+                content: '▼';
+                font-size: 11px;
+                color: #64748b;
+            }
+
+            .ztree li span.button.root_close::before,
+            .ztree li span.button.roots_close::before,
+            .ztree li span.button.center_close::before,
+            .ztree li span.button.bottom_close::before {
+                content: '▶';
+                font-size: 11px;
+                color: #64748b;
+            }
+
+            /* Custom Icons - Depth Specific Visuals */
+            .ztree li span.button.ico_open,
+            .ztree li span.button.ico_close,
+            .ztree li span.button.ico_docu {
+                font-size: 18px;
+                margin-right: 8px;
+            }
+
+            .ztree li.level0>span.button.ico_open,
+            .ztree li.level0>span.button.ico_close {
+                font-size: 20px;
+            }
+
+            .ztree li span.button.ico_open::before,
+            .ztree li span.button.ico_close::before {
+                content: '📁';
+                color: #3b82f6;
+                filter: sepia(1) hue-rotate(190deg) saturate(5) brightness(0.9);
+            }
+
+            .ztree li span.button.ico_open::before {
+                content: '📂';
+            }
+
+            .ztree li span.button.ico_docu::before {
+                content: '📄';
+                opacity: 0.6;
+                font-size: 17px;
+            }
+
+            /* Text Styling */
+            .ztree li a span.node_name {
+                max-width: 190px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                margin-left: 5px;
+            }
+            
+            .details-panel { flex: 1; display: flex; flex-direction: column; gap: 20px; height: 800px; }
+            .section-card { background: #fff; border: 1px solid var(--border-color); border-radius: 12px; display: flex; flex-direction: column; flex: 1; }
+            .card-header { padding: 12px 20px; background: var(--header-bg); border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+            .card-body { padding: 15px; flex: 1; display: flex; flex-direction: column; }
+            
+            #connectGrid { width: 100%; height: 100%; min-height: 400px; }
+            .btn { padding: 6px 14px; border-radius: 4px; font-size: 12px; font-weight: 500; cursor: pointer; border: 1px solid transparent; }
+            .btn-primary { background: #2563eb; color: #fff; }
+            .btn-secondary { background: #fff; border-color: #d1d5db; color: #4b5563; }
+        </style>
+    </th:block>
+</head>
+
+<body>
+    <div layout:fragment="content">
+        <div class="page-header" style="margin-bottom: 2rem;">
+            <h1 style="font-size: 1.75rem; font-weight: 700;">표준분류-전시카테고리 연결 관리 🔗</h1>
+            <p style="color: #64748b; font-size: 0.95rem;">좌측 표준분류 디렉토리를 선택하고 연결할 소전시 카테고리를 관리합니다.</p>
+        </div>
+
+        <div class="content-container" style="display: flex; gap: 1.5rem;">
+            <!-- Left Tree Area -->
+            <div class="tree-panel">
+                <div class="panel-header">
+                    <h3>표준분류 목록</h3>
+                </div>
+                <div class="ztree-wrap">
+                    <ul id="stdCategoryTree" class="ztree"></ul>
+                </div>
+            </div>
+
+            <!-- Right Content Area -->
+            <div class="details-panel">
+                <div class="section-card">
+                    <div class="card-header">
+                        <h3>연결 소전시 카테고리 목록</h3>
+                        <div class="header-buttons">
+                            <!-- Data Management Buttons -->
+                            <button type="button" class="btn btn-secondary" id="btnAddRow">행추가</button>
+                            <button type="button" class="btn btn-secondary" id="btnDelRow">행삭제</button>
+                            <button type="button" class="btn btn-primary" id="btnSaveGrid">저장</button>
+                        </div>
+                    </div>
+                    <!-- Target for AUIGrid -->
+                    <div class="card-body" id="connectGrid"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <th:block layout:fragment="script">
+        <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+        <script th:src="@{/js/AUIGrid/AUIGridLicense.js}"></script>
+        <script th:src="@{/js/AUIGrid/AUIGrid.js}"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/zTree.v3/3.5.40/js/jquery.ztree.all.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+        
+        <!-- Controller Script -->
+        <script th:src="@{/js/display/standardDisplayCategoryConnect.js}"></script>
+    </th:block>
+</body>
+</html>
