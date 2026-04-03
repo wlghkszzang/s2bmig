@@ -4,165 +4,92 @@
 <mapper namespace="com.aas.display.infrastructure.db.DisplayCategoryQueryMyBatisDao">
 
     <select id="getCategoryTreeList" parameterType="com.aas.display.domain.repository.query.param.DisplayCategoryQueryParam" resultType="com.aas.display.domain.repository.query.result.DisplayCategoryQueryResult">
-        SELECT
-            /* DisplayCategoryQueryMapper.getDisplayCategoryTreeList */
-            PDCB.DISP_CTG_NO,
-            PDCBM.DISP_CTG_NM,
-            PDCB.DISP_SEQ,
-            (
-                SELECT
-                    PDCBM_LRG.DISP_CTG_NM || COALESCE('>' || PDCBM_MID.DISP_CTG_NM, '') || COALESCE('>' || PDCBM_SML.DISP_CTG_NM, '') || COALESCE('>' || PDCBM_THN.DISP_CTG_NM, '')
-                FROM
-                    PR_DISP_CTG_BASE PDCB1
-                    LEFT OUTER JOIN PR_DISP_CTG_BASE_ML PDCBM_LRG ON PDCB1.LRG_CTG_NO = PDCBM_LRG.DISP_CTG_NO
-                    AND PDCBM_LRG.LANG_CD = 'ko'
-                    LEFT OUTER JOIN PR_DISP_CTG_BASE_ML PDCBM_MID ON PDCB1.MID_CTG_NO = PDCBM_MID.DISP_CTG_NO
-                    AND PDCBM_MID.LANG_CD = 'ko'
-                    LEFT OUTER JOIN PR_DISP_CTG_BASE_ML PDCBM_SML ON PDCB1.SML_CTG_NO = PDCBM_SML.DISP_CTG_NO
-                    AND PDCBM_SML.LANG_CD = 'ko'
-                    LEFT OUTER JOIN PR_DISP_CTG_BASE_ML PDCBM_THN ON PDCB1.THN_CTG_NO = PDCBM_THN.DISP_CTG_NO
-                    AND PDCBM_THN.LANG_CD = 'ko'
-                WHERE
-                    PDCB1.DISP_CTG_NO = PDCB.DISP_CTG_NO
-            ) AS HIERARCHY_TEXT,
-            PDCB.UPR_DISP_CTG_NO,
-            PDCB.LRG_CTG_NO,
-            PDCB.MID_CTG_NO,
-            PDCB.SML_CTG_NO,
-            PDCB.THN_CTG_NO,
-            PDCB.SITE_NO,
-            CSB.SITE_NM,
-            PDCB.DPML_NO,
-            PDB.DPML_NM,
-            PDCB.LEAF_YN,
-            PDCB.USE_YN
-        FROM
-            PR_DISP_CTG_BASE PDCB
-            INNER JOIN PR_DISP_CTG_BASE_ML PDCBM ON PDCB.DISP_CTG_NO = PDCBM.DISP_CTG_NO
-            AND PDCBM.LANG_CD = 'ko'
-            INNER JOIN PR_DPML_BASE PDB ON PDCB.DPML_NO = PDB.DPML_NO
-            INNER JOIN CC_SITE_BASE CSB ON PDCB.SITE_NO = CSB.SITE_NO
-        <where>
-            <if test="siteNo != null and siteNo != ''">
-                AND PDCB.SITE_NO = #{siteNo}
-            </if>
-            <if test="dpmlNo != null and dpmlNo != ''">
-                AND PDCB.DPML_NO = #{dpmlNo}
-            </if>
-            <if test="useYn != null and useYn != ''">
-                AND PDCB.USE_YN = #{useYn}
-                AND NOT EXISTS (
-                    SELECT
-                        1
-                    FROM
-                        PR_DISP_CTG_BASE UPPER_PDCB
-                    WHERE
-                        UPPER_PDCB.DISP_CTG_NO IN (
-                            PDCB.LRG_CTG_NO,
-                            PDCB.MID_CTG_NO,
-                            PDCB.SML_CTG_NO,
-                            PDCB.THN_CTG_NO
-                        )
-                        AND UPPER_PDCB.USE_YN != 'Y'
-                )
-            </if>
-        </where>
-        ORDER BY
-            PDCB.UPR_DISP_CTG_NO,
-            PDCB.DISP_SEQ,
-            PDCB.SYS_MOD_DTM DESC
+        /* DisplayCategoryQueryMyBatisDao.getCategoryTreeList */
+        SELECT 
+            PDCB.DISP_CTG_NO
+            , PDCBM.DISP_CTG_NM
+            , PDCB.DISP_SEQ
+            , PDCB.UPR_DISP_CTG_NO
+            , PDCB.LRG_CTG_NO
+            , PDCB.MID_CTG_NO
+            , PDCB.SML_CTG_NO
+            , PDCB.THN_CTG_NO
+            , PDCB.SITE_NO
+            , PDCB.DPML_NO
+            , PDCB.LEAF_YN
+            , CASE WHEN PDCB.LEAF_YN = 'Y' THEN
+                CAST ((SELECT COUNT(1) FROM PR_DISP_GOODS_INFO PDGI WHERE PDGI.DISP_CTG_NO = PDCB.DISP_CTG_NO) AS TEXT)
+              ELSE '' END AS CAT_GOODS_CNT
+        FROM PR_DISP_CTG_BASE PDCB
+        INNER JOIN PR_DISP_CTG_BASE_ML PDCBM ON PDCB.DISP_CTG_NO = PDCBM.DISP_CTG_NO AND PDCBM.LANG_CD = #{langCd}
+        WHERE PDCB.SITE_NO = #{siteNo}
+        <if test="useYn != null and useYn != ''">
+          AND PDCB.USE_YN = #{useYn}
+          AND NOT EXISTS (
+            SELECT 1 FROM PR_DISP_CTG_BASE UPPER_PDCB 
+            WHERE UPPER_PDCB.DISP_CTG_NO IN (PDCB.LRG_CTG_NO, PDCB.MID_CTG_NO, PDCB.SML_CTG_NO, PDCB.THN_CTG_NO) 
+            AND UPPER_PDCB.USE_YN <![CDATA[ <> ]]> 'Y'
+          )
+        </if>
+        AND PDCB.DPML_NO = #{dpmlNo}
+        ORDER BY PDCB.UPR_DISP_CTG_NO, PDCB.DISP_SEQ, PDCB.SYS_MOD_DTM DESC
     </select>
 
     <select id="getCategoryDetail" parameterType="com.aas.display.domain.repository.query.param.DisplayCategoryQueryParam" resultType="com.aas.display.domain.repository.query.result.DisplayCategoryQueryResult">
         /* DisplayCategoryQueryMyBatisDao.getCategoryDetail */
-        SELECT
-            PDCB.DISP_CTG_NO,
-            PDCBM.DISP_CTG_NM,
-            PDCB.SITE_NO,
-            CSB.SITE_NM,
-            PDCB.DPML_NO,
-            PDCB.DISP_SEQ,
-            PDCB.USE_YN,
-            PDCB.LEAF_YN,
-            PDCB.YES24_CTG_CD,
-            CASE
-                WHEN PDCB.DISP_CTG_NO IN (
-                    SELECT
-                        PDCB1.UPR_DISP_CTG_NO
-                    FROM
-                        PR_DISP_CTG_BASE PDCB1
-                ) THEN 'N'
-                WHEN (
-                    SELECT
-                        COUNT(1)
-                    FROM
-                        PR_STD_CTG_DISP_INFO PSCDI
-                    WHERE
-                        PSCDI.DISP_CTG_NO = #{dispCtgNo}
-                        AND PSCDI.DEL_YN = 'N'
-                ) <![CDATA[ > ]]> 0 THEN 'N'
-                WHEN (
-                    SELECT
-                        COUNT(1)
-                    FROM
-                        PR_DISP_GOODS_INFO PDGI
-                    WHERE
-                        PDGI.DISP_CTG_NO = PDCB.DISP_CTG_NO
-                ) <![CDATA[ > ]]> 0 THEN 'N'
+        SELECT  
+            PDCB.DISP_CTG_NO
+            , PDCBM.DISP_CTG_NM
+            , PDCB.SITE_NO
+            , CSB.SITE_NM
+            , PDCB.DPML_NO
+            , PDCB.DISP_SEQ
+            , PDCB.USE_YN
+            , PDCB.LEAF_YN
+            , PDCB.YES24_CTG_CD
+            , CASE
+                WHEN PDCB.DISP_CTG_NO IN (SELECT PDCB1.UPR_DISP_CTG_NO FROM PR_DISP_CTG_BASE PDCB1) THEN 'N'
+                WHEN (SELECT COUNT(1) FROM PR_STD_CTG_DISP_INFO PSCDI WHERE PSCDI.DISP_CTG_NO = #{dispCtgNo} AND PSCDI.DEL_YN = 'N') <![CDATA[ > ]]> 0 THEN 'N'
+                WHEN (SELECT COUNT(1) FROM PR_DISP_GOODS_INFO PDGI WHERE PDGI.DISP_CTG_NO = PDCB.DISP_CTG_NO) <![CDATA[ > ]]> 0 THEN 'N'
                 WHEN COALESCE(PDCB.THN_CTG_NO, '') != '' THEN 'N'
-                ELSE 'Y'
-            END AS LEAF_CTG_YN_CHANGE_POSSIBLE,
-            PDCB.SYS_MOD_ID,
-            PDCB.SYS_MOD_DTM
-        FROM
-            PR_DISP_CTG_BASE PDCB
-            INNER JOIN PR_DISP_CTG_BASE_ML PDCBM ON PDCB.DISP_CTG_NO = PDCBM.DISP_CTG_NO
-            AND PDCBM.LANG_CD = #{langCd}
-            INNER JOIN CC_SITE_BASE CSB ON CSB.SITE_NO = PDCB.SITE_NO
-        WHERE
-            PDCB.DISP_CTG_NO = #{dispCtgNo}
+                ELSE 'Y' END AS LEAF_CTG_YN_CHANGE_POSSIBLE
+            , PDCB.SYS_MOD_ID
+            , PDCB.SYS_MOD_DTM
+        FROM PR_DISP_CTG_BASE PDCB
+        INNER JOIN PR_DISP_CTG_BASE_ML PDCBM ON PDCB.DISP_CTG_NO = PDCBM.DISP_CTG_NO AND PDCBM.LANG_CD = #{langCd}
+        INNER JOIN CC_SITE_BASE CSB ON CSB.SITE_NO = PDCB.SITE_NO
+        WHERE PDCB.DISP_CTG_NO = #{dispCtgNo}
     </select>
 
     <select id="getSubCategoryListCount" parameterType="com.aas.display.domain.repository.query.param.DisplayCategoryQueryParam" resultType="java.lang.Integer">
         /* DisplayCategoryQueryMyBatisDao.getSubCategoryListCount */
-        SELECT
-            COUNT(1)
-        FROM
-            PR_DISP_CTG_BASE PDCB
-        WHERE
-            PDCB.UPR_DISP_CTG_NO = #{dispCtgNo}
+        SELECT COUNT(1)
+        FROM PR_DISP_CTG_BASE PDCB
+        WHERE PDCB.UPR_DISP_CTG_NO = #{dispCtgNo}
     </select>
 
     <select id="getSubCategoryList" parameterType="com.aas.display.domain.repository.query.param.DisplayCategoryQueryParam" resultType="com.aas.display.domain.repository.query.result.DisplayCategoryQueryResult">
         /* DisplayCategoryQueryMyBatisDao.getSubCategoryList */
-        SELECT
-            PDCB.DISP_CTG_NO,
-            PDCBM.DISP_CTG_NM,
-            PDCB.DPML_NO,
-            PDCB.DISP_SEQ,
-            PDCB.USE_YN,
-            PDCB.LEAF_YN,
-            PDCB.SYS_MOD_ID,
-            PDCB.SYS_MOD_DTM
-        FROM
-            PR_DISP_CTG_BASE PDCB
-            INNER JOIN PR_DISP_CTG_BASE_ML PDCBM ON PDCB.DISP_CTG_NO = PDCBM.DISP_CTG_NO
-            AND PDCBM.LANG_CD = #{langCd}
-        WHERE
-            PDCB.UPR_DISP_CTG_NO = #{dispCtgNo}
-        ORDER BY
-            PDCB.DISP_SEQ,
-            PDCB.SYS_MOD_DTM DESC
+        SELECT 
+            PDCB.DISP_CTG_NO
+            , PDCBM.DISP_CTG_NM
+            , PDCB.DPML_NO
+            , PDCB.DISP_SEQ
+            , PDCB.USE_YN
+            , PDCB.LEAF_YN
+            , PDCB.SYS_MOD_ID
+            , PDCB.SYS_MOD_DTM
+        FROM PR_DISP_CTG_BASE PDCB
+        INNER JOIN PR_DISP_CTG_BASE_ML PDCBM ON PDCB.DISP_CTG_NO = PDCBM.DISP_CTG_NO AND PDCBM.LANG_CD = #{langCd}
+        WHERE PDCB.UPR_DISP_CTG_NO = #{dispCtgNo}
+        ORDER BY PDCB.DISP_SEQ, PDCB.SYS_MOD_DTM DESC
     </select>
 
     <select id="getDisplayGoodsListCount" parameterType="com.aas.display.domain.repository.query.param.DisplayCategoryQueryParam" resultType="java.lang.Integer">
         /* DisplayCategoryQueryMyBatisDao.getDisplayGoodsListCount */
-        SELECT
-            COUNT(1)
-        FROM
-            PR_DISP_GOODS_INFO PDGI
-        WHERE
-            PDGI.DISP_CTG_NO = #{dispCtgNo}
+        SELECT COUNT(1)
+        FROM PR_DISP_GOODS_INFO PDGI
+        WHERE PDGI.DISP_CTG_NO = #{dispCtgNo}
         <if test='dispYn == "Y"'>
             AND PDGI.DISP_YN = #{dispYn}
         </if>
@@ -170,136 +97,97 @@
 
     <select id="getDisplayGoodsList" parameterType="com.aas.display.domain.repository.query.param.DisplayCategoryQueryParam" resultType="com.aas.display.domain.repository.query.result.DisplayCategoryQueryResult$GoodsInfoResult">
         /* DisplayCategoryQueryMyBatisDao.getDisplayGoodsList */
-        SELECT
-            PDGI.DISP_CTG_NO,
-            PDGI.GOODS_NO,
-            PDGI.DISP_YN,
-            PDGI.SYS_MOD_ID,
-            PDGI.SYS_MOD_DTM,
-            PGBM.GOODS_NM,
-            FN_GET_CODENAME ('PR002', PGB.GOODS_TYP_CD) AS GOODS_TYP_CD,
-            PGPH.NOR_PRC,
-            PGPH.SALE_PRC,
-            FN_GET_CODENAME ('PR005', PGB.SALE_STAT_CD) AS SALE_STAT_CD,
-            EEB.ENTR_NM,
-            PGB.GOODS_REG_DTM AS SYS_REG_DTM
-        FROM
-            PR_GOODS_BASE PGB
-            INNER JOIN PR_DISP_GOODS_INFO PDGI ON PDGI.GOODS_NO = PGB.GOODS_NO
-            INNER JOIN PR_GOODS_BASE_ML PGBM ON PGBM.GOODS_NO = PGB.GOODS_NO
-            AND PGBM.LANG_CD = #{langCd}
-            INNER JOIN PR_GOODS_PRCE_HIST PGPH ON PGB.GOODS_NO = PGPH.GOODS_NO
-            AND NOW() BETWEEN PGPH.HIST_STR_DTM AND PGPH.HIST_END_DTM
-            INNER JOIN ET_ENTR_BASE EEB ON PGB.ENTR_NO = EEB.ENTR_NO
-        WHERE
-            PDGI.DISP_CTG_NO = #{dispCtgNo}
+        SELECT 
+            PDGI.DISP_CTG_NO
+            , PDGI.GOODS_NO
+            , PDGI.DISP_YN
+            , PDGI.SYS_MOD_ID
+            , PDGI.SYS_MOD_DTM
+            , PGBM.GOODS_NM
+            , FN_GET_CODENAME('PR002', PGB.GOODS_TYP_CD) AS GOODS_TYP_CD
+            , PGPH.NOR_PRC
+            , PGPH.SALE_PRC
+            , FN_GET_CODENAME('PR005', PGB.SALE_STAT_CD) AS SALE_STAT_CD
+            , EEB.ENTR_NM
+            , PGB.GOODS_REG_DTM AS SYS_REG_DTM
+        FROM PR_GOODS_BASE PGB
+        INNER JOIN PR_DISP_GOODS_INFO PDGI ON PDGI.GOODS_NO = PGB.GOODS_NO
+        INNER JOIN PR_GOODS_BASE_ML PGBM ON PGBM.GOODS_NO = PGB.GOODS_NO AND PGBM.LANG_CD = #{langCd}
+        INNER JOIN PR_GOODS_PRCE_HIST PGPH ON PGB.GOODS_NO = PGPH.GOODS_NO AND NOW() BETWEEN PGPH.HIST_STR_DTM AND PGPH.HIST_END_DTM
+        INNER JOIN ET_ENTR_BASE EEB ON PGB.ENTR_NO = EEB.ENTR_NO
+        WHERE PDGI.DISP_CTG_NO = #{dispCtgNo}
         <if test='dispYn == "Y"'>
             AND PDGI.DISP_YN = #{dispYn}
         </if>
         <if test='saleStatCd != null and saleStatCd != ""'>
             AND PGB.SALE_STAT_CD = #{saleStatCd}
         </if>
-        ORDER BY
-            PGB.GOODS_REG_DTM DESC
-        LIMIT
-            #{rowsPerPage}
-        OFFSET
-            (#{pageIdx} - 1) * #{rowsPerPage}
+        ORDER BY PGB.GOODS_REG_DTM DESC
+        LIMIT #{rowsPerPage} OFFSET (#{pageIdx} - 1) * #{rowsPerPage}
     </select>
 
     <select id="getGoodsListDetail" parameterType="com.aas.display.domain.repository.query.param.DisplayCategoryQueryParam" resultType="com.aas.display.domain.repository.query.result.DisplayCategoryQueryResult$GoodsInfoResult">
         /* DisplayCategoryQueryMyBatisDao.getGoodsListDetail */
-        SELECT
-            PGB.GOODS_NO,
-            PGBM.GOODS_NM,
-            PGB.BRAND_NO,
-            FN_GET_CODENAME ('PR002', PGB.GOODS_TYP_CD) AS GOODS_TYP_CD,
-            PGPH.NOR_PRC,
-            PGPH.SALE_PRC,
-            FN_GET_CODENAME ('PR005', PGB.SALE_STAT_CD) AS SALE_STAT_CD,
-            EEB.ENTR_NM,
-            PGB.GOODS_REG_DTM AS SYS_REG_DTM
-        FROM
-            PR_GOODS_BASE PGB
-            INNER JOIN PR_GOODS_BASE_ML PGBM ON PGB.GOODS_NO = PGBM.GOODS_NO
-            AND PGBM.LANG_CD = #{langCd}
-            INNER JOIN PR_GOODS_PRCE_HIST PGPH ON PGB.GOODS_NO = PGPH.GOODS_NO
-            AND NOW() BETWEEN PGPH.HIST_STR_DTM AND PGPH.HIST_END_DTM
-            INNER JOIN ET_ENTR_BASE EEB ON PGB.ENTR_NO = EEB.ENTR_NO
-        WHERE
-            PGB.GOODS_NO IN
+        SELECT 
+            PGB.GOODS_NO
+            , PGBM.GOODS_NM
+            , PGB.BRAND_NO
+            , FN_GET_CODENAME('PR002', PGB.GOODS_TYP_CD) AS GOODS_TYP_CD
+            , PGPH.NOR_PRC
+            , PGPH.SALE_PRC
+            , FN_GET_CODENAME('PR005', PGB.SALE_STAT_CD) AS SALE_STAT_CD
+            , EEB.ENTR_NM
+            , PGB.GOODS_REG_DTM AS SYS_REG_DTM
+        FROM PR_GOODS_BASE PGB
+        INNER JOIN PR_GOODS_BASE_ML PGBM ON PGB.GOODS_NO = PGBM.GOODS_NO AND PGBM.LANG_CD = #{langCd}
+        INNER JOIN PR_GOODS_PRCE_HIST PGPH ON PGB.GOODS_NO = PGPH.GOODS_NO AND NOW() BETWEEN PGPH.HIST_STR_DTM AND PGPH.HIST_END_DTM
+        INNER JOIN ET_ENTR_BASE EEB ON PGB.ENTR_NO = EEB.ENTR_NO
+        WHERE PGB.GOODS_NO IN
         <foreach collection="goodsArray" open="(" close=")" item="item" separator=",">
             #{item}
         </foreach>
         AND PGB.GOODS_NO NOT IN (
-        SELECT PDGI.GOODS_NO
-        FROM PR_DISP_GOODS_INFO PDGI
-        WHERE PDGI.DISP_CTG_NO = #{dispCtgNo}
-        AND PDGI.GOODS_NO IN
-        <foreach collection="goodsArray" open="(" close=")" item="item" separator=",">
-            #{item}
-        </foreach>
+            SELECT PDGI.GOODS_NO
+            FROM PR_DISP_GOODS_INFO PDGI
+            WHERE PDGI.DISP_CTG_NO = #{dispCtgNo}
+            AND PDGI.GOODS_NO IN
+            <foreach collection="goodsArray" open="(" close=")" item="item" separator=",">
+                #{item}
+            </foreach>
         )
     </select>
 
     <select id="getCheckPrDispGoodsInfo" parameterType="java.lang.String" resultType="java.lang.String">
         /* DisplayCategoryQueryMyBatisDao.getCheckPrDispGoodsInfo */
-        SELECT
-            GOODS_NO
-        FROM
-            PR_DISP_GOODS_INFO
-        WHERE
-            DISP_CTG_NO = #{dispCtgNo}
+        SELECT GOODS_NO
+        FROM PR_DISP_GOODS_INFO
+        WHERE DISP_CTG_NO = #{dispCtgNo}
     </select>
 
     <select id="getCheckValidGoods" parameterType="com.aas.display.domain.repository.query.param.DisplayCategoryQueryParam" resultType="java.lang.String">
         /* DisplayCategoryQueryMyBatisDao.getCheckValidGoods */
-        SELECT
-            CASE
-                WHEN NOT EXISTS (
-                    SELECT
-                        1
-                    FROM
-                        PR_GOODS_BASE
-                    WHERE
-                        GOODS_NO = #{goodsNo}
-                ) THEN 'N'
-                WHEN EXISTS (
-                    SELECT
-                        1
-                    FROM
-                        PR_DISP_GOODS_INFO
-                    WHERE
-                        DISP_CTG_NO = #{dispCtgNo}
-                        AND GOODS_NO = #{goodsNo}
-                ) THEN 'D'
+        SELECT 
+            CASE 
+                WHEN NOT EXISTS (SELECT 1 FROM PR_GOODS_BASE WHERE GOODS_NO = #{goodsNo}) THEN 'N'
+                WHEN EXISTS (SELECT 1 FROM PR_DISP_GOODS_INFO WHERE DISP_CTG_NO = #{dispCtgNo} AND GOODS_NO = #{goodsNo}) THEN 'D'
                 ELSE 'Y'
             END AS VALID_YN
     </select>
 
     <select id="getSiteList" resultType="com.aas.display.domain.repository.query.result.CcSiteBaseQueryResult">
         /* DisplayCategoryQueryMyBatisDao.getSiteList */
-        SELECT
-            SITE_NO AS "siteNo",
-            SITE_NM AS "siteNm"
-        FROM
-            CC_SITE_BASE
-        ORDER BY
-            SITE_NO
+        SELECT SITE_NO as "siteNo", SITE_NM as "siteNm"
+        FROM CC_SITE_BASE
+        ORDER BY SITE_NO
     </select>
 
     <select id="getMallList" parameterType="java.lang.String" resultType="com.aas.display.domain.repository.query.result.PrDpmlBaseQueryResult">
         /* DisplayCategoryQueryMyBatisDao.getMallList */
-        SELECT
-            DPML_NO AS "dpmlNo",
-            DPML_NM AS "dpmlNm"
-        FROM
-            PR_DPML_BASE
-        WHERE
-            SITE_NO = #{siteNo}
-            AND DISP_YN = 'Y'
-        ORDER BY
-            DPML_NO
+        SELECT DPML_NO as "dpmlNo", DPML_NM as "dpmlNm"
+        FROM PR_DPML_BASE
+        WHERE SITE_NO = #{siteNo}
+        AND DISP_YN = 'Y'
+        ORDER BY DPML_NO
     </select>
 
 </mapper>

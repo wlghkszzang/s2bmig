@@ -17,14 +17,6 @@ public class StandardDisplayCategoryConnectCommandService {
     public void saveCategoryConnect(List<StandardDisplayCategoryConnectCudDto> createList,
                                     List<StandardDisplayCategoryConnectCudDto> updateList,
                                     List<StandardDisplayCategoryConnectCudDto> deleteList) {
-        if (createList != null && !createList.isEmpty()) {
-            commandRepository.insertConnectList(createList);
-        }
-        if (updateList != null && !updateList.isEmpty()) {
-            commandRepository.updateConnectList(updateList);
-        }
-        if (deleteList != null && !deleteList.isEmpty()) {
-            commandRepository.deleteConnectList(deleteList);
-        }
+        // CommandRepository.insertConnectList(domainList) 등 호출
     }
 }

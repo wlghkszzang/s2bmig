@@ -13,15 +13,24 @@ import java.util.List;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface DisplayCategoryAppTransfer {
+
+    // [Command -> Entity]
     @Mapping(target = "sysRegDtm", ignore = true)
     @Mapping(target = "sysModDtm", ignore = true)
     PrDispCtg toEntity(SaveDisplayCategoryCommand command);
     List<PrDispCtg> toEntityList(List<SaveDisplayCategoryCommand> commands);
+
+    // [Goods Command -> GoodsInfo Entity]
     PrDispCtg.GoodsInfo toGoodsInfo(SaveDisplayGoodsGridCommand.SaveDisplayGoodsCommand command);
     List<PrDispCtg.GoodsInfo> toGoodsInfoList(List<SaveDisplayGoodsGridCommand.SaveDisplayGoodsCommand> commands);
+
+    // [Query -> Param]
     DisplayCategoryQueryParam toQueryParam(GetDisplayCategoryQuery query);
+
+    // [Result -> AppResponse]
     DisplayCategoryQueryResponse toQueryResponse(DisplayCategoryQueryResult result);
     List<DisplayCategoryQueryResponse> toQueryResponseList(List<DisplayCategoryQueryResult> results);
+
     DisplayCategoryQueryResponse.GoodsInfoQueryResponse toGoodsQueryResponse(DisplayCategoryQueryResult.GoodsInfoResult result);
     List<DisplayCategoryQueryResponse.GoodsInfoQueryResponse> toGoodsQueryResponseList(List<DisplayCategoryQueryResult.GoodsInfoResult> results);
 }
