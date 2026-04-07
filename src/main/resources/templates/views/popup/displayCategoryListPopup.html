@@ -1,0 +1,129 @@
+<!--
+* 프로그램명 : 전시 카테고리 조회 팝업
+* 작 성 일 : 2023.05.18
+* 작 성 자 : 오수빈
+* 수 정 자 :
+* 버    전 : Venus
+* 개    요 : 전시 카테고리 조회 팝업 UI
+* 이    력 :
+-->
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layouts/popup-layout}">
+
+<body>
+    <!--Title Area-->
+    <th:block layout:fragment="popup-title-area">
+        <th:block layout:insert="~{fragments/popup/popup-title :: popup-title}" th:with="title='전시 카테고리 조회'"></th:block>
+    </th:block>
+    <!--Title Area-->
+
+    <!--Search Area-->
+    <th:block layout:fragment="popup-search-area">
+        <div class="search">
+            <form name="dcGridForm" id="dcGridForm">
+                <table class="search-table">
+                    <colgroup>
+                        <col style="width:15%;" />
+                        <col style="width:20%;" />
+                        <col style="width:15%;" />
+                        <col style="width:50%;" />
+                    </colgroup>
+                    <tbody>
+                        <tr>
+                            <td class="label" th:text="'사이트'"></td>
+                            <td>
+                                <div class="input-group w100">
+                                    <select class="form-control w40" id="siteNo" name="siteNo">
+                                        <th:block th:if="${#strings.isEmpty(requestData.argSiteNo)}">
+                                            <option value="" th:text="'전체'"></option>
+                                            <option th:each="list : ${siteList}" th:value="${list.siteNo}"
+                                                th:text="${list.siteNm}"></option>
+                                        </th:block>
+                                        <th:block th:unless="${#strings.isEmpty(requestData.argSiteNo)}">
+                                            <option th:each="list : ${siteList}" th:value="${list.siteNo}"
+                                                th:text="${list.siteNm}"
+                                                th:if="${requestData.argSiteNo.equals(list.siteNo) }"></option>
+                                        </th:block>
+                                    </select>
+                                </div>
+                            </td>
+                            <td class="label" th:text="'전시몰'"></td>
+                            <td>
+                                <div class="input-group w100">
+                                    <select class="form-control w40" id="dpmlNo" name="dpmlNo">
+                                        <option value="" th:text="'전체'"></option>
+                                    </select>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="label" th:text="'사용여부'"></td>
+                            <td>
+                                <select class="form-control w90" id="useYn" name="useYn">
+                                    <th:block th:if="${#strings.isEmpty(requestData.argUseYn)}">
+                                        <option value="" th:text="'전체'"></option>
+                                        <option value="Y" th:text="'사용'"></option>
+                                    </th:block>
+                                    <th:block th:unless="${#strings.isEmpty(requestData.argUseYn)}">
+                                        <option th:value="Y" th:text="'사용'" th:if="${requestData.argUseYn.equals('Y')}">
+                                        </option>
+                                    </th:block>
+                                </select>
+                            </td>
+                            <td class="label" th:text="'전시카테고리명'"></td>
+                            <td>
+                                <input class="input w20" type="text" name="dispCtgNm" id="dispCtgNm" maxlength="300" />
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </form>
+        </div>
+    </th:block>
+    <!--Search Area-->
+
+    <!--Search Button Area-->
+    <th:block layout:fragment="popup-search-button-area">
+        <th:block layout:insert="~{fragments/popup/popup-btn :: popup-search-btn}" />
+    </th:block>
+    <!--Search Button Area-->
+
+    <!--List Area-->
+    <th:block layout:fragment="popup-List-area">
+        <div class="grid">
+            <div class="grid-head" style="overflow: hidden;">
+                <div class="title-area">
+                    <h2 class="title" th:text="'전시 카테고리 목록'"></h2>
+                </div>
+                <div class="option-area">
+                    <div class="page-option" grid-id="dcGrid"></div>
+                </div>
+            </div>
+            <div class="grid-body with-head">
+                <div id="dcGrid" style="width: 100%; height: 400px;"></div>
+            </div>
+        </div>
+    </th:block>
+    <!--List Area-->
+
+    <!--List Button Area-->
+    <th:block layout:fragment="popup-List-button-area">
+        <th:block layout:insert="~{fragments/popup/popup-btn :: popup-List-btn}" />
+    </th:block>
+
+    <th:block layout:fragment="add-script">
+        <script th:inline="javascript">
+            /*<![CDATA[*/
+            let _defaultPage = 0;
+            const _gridType = /*[[${ requestData?.argSelectType }]]*/ 'M';
+            const argSiteNo = /*[[${ requestData?.argSiteNo }]]*/ '';
+            const argDpmlNo = /*[[${ requestData?.argDpmlNo }]]*/ '';
+            const mallList = /*[[${ mallList }]]*/[];
+            /*]]>*/
+        </script>
+        <script th:src="@{/js/display/displayCategoryListPopup.js}"></script>
+    </th:block>
+
+</body>
+
+</html>

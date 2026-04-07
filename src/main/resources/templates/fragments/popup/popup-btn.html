@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ko-KR"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<body>
+<th:block layout:fragment="popup-search-btn">
+    <div class="button-group search-btn">
+        <a href="#" class="button white" id="btn_popup_init">
+            <span class="text" th:text="'초기화'">초기화</span>
+        </a>
+        <a href="#" class="button dark" id="btn_popup_list">
+            <span class="text" th:text="'조회'">조회</span>
+        </a>
+    </div>
+</th:block>
+
+<th:block layout:fragment="popup-dtl-btn">
+    <div class="button-group search-btn">
+        <a href="#" class="button white" id="btn_popup_close">
+            <span class="text" th:text="'취소'">취소</span>
+        </a>
+        <a href="#" class="button large" id="btn_popup_apply">
+            <span class="text" th:text="'저장'">저장</span>
+        </a>
+    </div>
+</th:block>
+<th:block layout:fragment="popup-close-save-btn">
+    <div class="button-group search-btn">
+        <a href="#" class="button white" id="btn_popup_close">
+            <span class="text" th:text="'닫기'">닫기</span>
+        </a>
+        <a href="#" class="button large" id="btn_popup_apply">
+            <span class="text" th:text="'저장'">저장</span>
+        </a>
+    </div>
+</th:block>
+
+<th:block layout:fragment="popup-List-btn">
+    <div class="button-group search-btn">
+        <a href="#" class="button white" id="btn_popup_close">
+            <span class="text" th:text="'닫기'">닫기</span>
+        </a>
+        <a href="#" class="button large" id="btn_popup_apply">
+            <span class="text" th:text="'적용'">적용</span>
+        </a>
+    </div>
+</th:block>
+
+<th:block layout:fragment="popup-bottom-btn">
+    <div class="button-group search-btn">
+        <a href="#" class="button" id="btn_popup_bottom_close">
+            <span class="text" th:text="'닫기'">닫기</span>
+        </a>
+    </div>
+</th:block>
+
+<th:block layout:fragment="popup-select-btn">
+    <div class="button-group search-btn">
+        <a href="#" class="button white" id="btn_popup_cancel">
+            <span class="text" th:text="'취소'">취소</span>
+        </a>
+        <a href="#" class="button large" id="btn_popup_select">
+            <span class="text" th:text="'선택'">선택</span>
+        </a>
+    </div>
+</th:block>
+
+<th:block layout:fragment="popup-ai-search-btn">
+    <div class="button-group search-btn">
+        <a href="#" class="button white" id="btn_popup_init">
+            <span class="text" th:text="${#messages.msg('adminCommon.button.init')}">초기화</span>
+        </a>
+        <a href="#" class="button dark" id="btn_popup_list">
+            <span class="text" th:text="${#messages.msg('adminCommon.button.ai.search')}">AI 생성</span>
+        </a>
+    </div>
+</th:block>
+</body>
+</html>

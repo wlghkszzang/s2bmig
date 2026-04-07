@@ -1,8 +1,9 @@
 package com.aas.display.domain.repository;
 
-import java.util.List;
 import com.aas.display.domain.model.StandardDisplayCategoryConnectQueryParam;
+import com.aas.display.domain.entity.PrStdCtgDispInfo;
+import java.util.List;
 
 public interface StandardDisplayCategoryConnectQueryRepository {
-    List<Object> selectConnectList(StandardDisplayCategoryConnectQueryParam param);
+    List<PrStdCtgDispInfo> selectConnectList(StandardDisplayCategoryConnectQueryParam param);
 }

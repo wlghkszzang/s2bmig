@@ -1,4 +1,4 @@
-package com.aas.display.interfaces.controller.dto;
+package com.aas.display.interfaces.dto.rsp;
 
 import lombok.Getter;
 import lombok.Setter;

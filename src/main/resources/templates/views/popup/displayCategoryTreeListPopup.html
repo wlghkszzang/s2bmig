@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/popup-layout}">
+<body>
+
+<!--Title Area-->
+<th:block layout:fragment="popup-title-area">
+    <div class="header" style="margin-bottom : 10px;">
+        <div class="title">전시 카테고리 조회</div>
+    </div>
+</th:block>
+
+<!--List Area-->
+<th:block layout:fragment="popup-List-area">
+    <div class="data-cont">
+        <div class="data">
+            <div class="ml10 mt10 d-flex">
+                <select id="siteNo" name="siteNo" class="form-control w30 mr5">
+                    <option th:each="list : ${siteList}"
+                            th:value="${list.siteNo}"
+                            th:text="${list.siteNm}"></option>
+                </select>
+                <select id="dpmlNo" name="dpmlNo" class="form-control w30 mr5">
+                    <option value="">전시몰 선택</option>
+                </select>
+                <select id="useYn" name="useYn" class="form-control w20">
+                    <option value="">전체</option>
+                    <option value="Y" selected>사용</option>
+                    <option value="N">미사용</option>
+                </select>
+            </div>
+            <div class="data-body mt10" style="padding: 10px; background: #fff; border-radius: 8px; border: 1px solid #f1f5f9;">
+                <ul id="tree" class="ztree" style="height: calc(100vh - 180px); overflow-y: auto; overflow-x: hidden;"></ul>
+            </div>
+        </div>
+    </div>
+</th:block>
+<!--List Area-->
+
+<!--List Button Area-->
+<th:block layout:fragment="popup-List-button-area">
+    <div style="margin: 20px auto; text-align: center; gap: 10px; display: flex; justify-content: center;">
+        <button type="button" class="button" id="btn_popup_apply" style="background-color: #2563eb;">적용</button>
+        <button type="button" class="button" id="btn_popup_close" style="background-color: #fff; color: #64748b; border: 1px solid #e2e8f0;">닫기</button>
+    </div>
+</th:block>
+
+<th:block layout:fragment="add-script">
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        const _argSelectType = /*[[${request.argSelectType}]]*/ '1';
+        const req            = /*[[${request}]]*/ {};
+        /*]]>*/
+    </script>
+    <script type="text/javascript" th:src="@{/js/popup/displayCategoryTreeListPopup.js}"></script>
+</th:block>
+
+</body>
+</html>

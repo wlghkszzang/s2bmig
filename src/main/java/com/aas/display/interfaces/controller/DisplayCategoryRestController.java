@@ -7,7 +7,8 @@ import com.aas.display.application.queryservice.DisplayCategoryQueryService;
 import com.aas.display.application.queryservice.query.GetDisplayCategoryQuery;
 import com.aas.display.application.queryservice.query.response.DisplayCategoryQueryResponse;
 import com.aas.display.application.commandservice.command.*;
-import com.aas.display.interfaces.controller.dto.*;
+import com.aas.display.interfaces.dto.req.*;
+import com.aas.display.interfaces.dto.rsp.*;
 import com.aas.display.interfaces.controller.transfer.DisplayCategoryTransfer;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -72,8 +73,9 @@ public class DisplayCategoryRestController {
         GetDisplayCategoryQuery query = domainTransfer.toQuery(dto);
         int totalCount = queryService.getDisplayGoodsListCount(query);
         List<DisplayCategoryQueryResponse.GoodsInfoQueryResponse> responses = queryService.getDisplayGoodsList(query);
-        
-        return RspDto.ok(domainTransfer.toGoodsRspList(responses), MetaResponse.builder().total(totalCount).count(responses.size()).build());
+
+        return RspDto.ok(domainTransfer.toGoodsRspList(responses),
+                MetaResponse.builder().total(totalCount).count(responses.size()).build());
     }
 
     @Operation(summary = "전시 상품 목록 저장", description = "카테고리별 상품 매핑 정보(추가, 수정, 삭제)를 저장함.")

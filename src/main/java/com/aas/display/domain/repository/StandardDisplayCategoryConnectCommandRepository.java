@@ -1,9 +1,10 @@
 package com.aas.display.domain.repository;
 
+import com.aas.display.domain.entity.PrStdCtgDispInfo;
 import java.util.List;
 
 public interface StandardDisplayCategoryConnectCommandRepository {
-    void insertConnectList(List<Object> createList);
-    void updateConnectList(List<Object> updateList);
-    void deleteConnectList(List<Object> deleteList);
+    void insertConnectList(List<PrStdCtgDispInfo> createList);
+    void updateConnectList(List<PrStdCtgDispInfo> updateList);
+    void deleteConnectList(List<PrStdCtgDispInfo> deleteList);
 }

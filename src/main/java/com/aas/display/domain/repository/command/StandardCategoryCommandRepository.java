@@ -3,6 +3,9 @@ package com.aas.display.domain.repository.command;
 import com.aas.display.domain.entity.PrStdCtg;
 import java.util.List;
 
+/**
+ * 표준 카테고리 명령 인터페이스 (원본 복구)
+ */
 public interface StandardCategoryCommandRepository {
     void updatePrStdCtg(PrStdCtg prStdCtg);
     void insertPrStdCtgList(List<PrStdCtg> list);

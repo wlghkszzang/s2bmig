@@ -6,8 +6,18 @@ import lombok.Setter;
 @Getter
 @Setter
 public class StandardDisplayCategoryConnectCudDto {
-    private String dispCtgNo; // 전시카테고리 번호 등 필요한 속성
-    private String stdCtgNo; 
+    private String stdCtgNo;
+    private String dispCtgNo;
+    private String repCtgYn;
+    private String siteNo;
+    private String dpmlNo;
+    private String useYn;
+    private String delYn;
+    
+    // 시스템 필드
+    private String sysRegId;
+    private String sysModId;
+
+    // UI 호환 필드
     private String dispYn;
-    // 기타 필요한 AS-IS 속성 유지
 }

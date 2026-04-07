@@ -1,53 +1,34 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<!--
-    네임스페이스는 Domain 계층의 QueryRepository 인터페이스와 1:1 매핑하거나,
-    혹은 Infrastructure 계층에서 구현한 XxxMyBatisDao(또는 Mapper) 인터페이스와 매핑합니다.
--->
 <mapper namespace="com.aas.display.domain.repository.StandardDisplayCategoryConnectQueryRepository">
 
-    <!-- 통신용 QueryResult 맵핑 -->
-
-    <!-- 연결된 소전시 카테고리 목록 조회 -->
-    <select id="selectConnectList" 
-            parameterType="com.aas.display.domain.model.StandardDisplayCategoryConnectQueryParam" 
-            resultType="com.aas.display.interfaces.dto.rsp.StandardDisplayCategoryConnectRspDto">
-        /* 
-           AS-IS 원본: api-bo/.../PrStdCtgDispInfoMapper.xml > getStandardDisplayCategoryConnect
-           StandardDisplayCategoryConnectQueryRepository.selectConnectList 
-        */
-		SELECT  /* prStdCtgDispInfo.getStandardDisplayCategoryConnect */
-			PSCDI.STD_CTG_NO AS stdCtgNo
-			,(SELECT
-				PDCBM_LRG.DISP_CTG_NM
-				|| COALESCE('>' || PDCBM_MID.DISP_CTG_NM, '')
-				|| COALESCE('>' || PDCBM_SML.DISP_CTG_NM, '')
-				|| COALESCE('>' || PDCBM_THN.DISP_CTG_NM, '')
-				FROM PR_DISP_CTG_BASE PDCB1
-					LEFT OUTER JOIN PR_DISP_CTG_BASE_ML PDCBM_LRG ON PDCB1.LRG_CTG_NO = PDCBM_LRG.DISP_CTG_NO AND PDCBM_LRG.LANG_CD = 'ko'
-					LEFT OUTER JOIN PR_DISP_CTG_BASE_ML PDCBM_MID ON PDCB1.MID_CTG_NO = PDCBM_MID.DISP_CTG_NO AND PDCBM_MID.LANG_CD = 'ko'
-					LEFT OUTER JOIN PR_DISP_CTG_BASE_ML PDCBM_SML ON PDCB1.SML_CTG_NO = PDCBM_SML.DISP_CTG_NO AND PDCBM_SML.LANG_CD = 'ko'
-					LEFT OUTER JOIN PR_DISP_CTG_BASE_ML PDCBM_THN ON PDCB1.THN_CTG_NO = PDCBM_THN.DISP_CTG_NO AND PDCBM_THN.LANG_CD = 'ko'
-				WHERE PDCB1.DISP_CTG_NO = PSCDI.DISP_CTG_NO
-			) AS dispCtgNm
-			, PSCDI.DISP_CTG_NO AS dispCtgNo
-			, PSCDI.REP_CTG_YN AS repCtgYn
-			, PSCDI.USE_YN AS dispYn
-		    , PSCDI.SITE_NO AS siteNo
-		    , CSB.SITE_NM AS siteNm
-		    , PSCDI.DPML_NO AS dpmlNo
-		    , PDB.DPML_NM AS dpmlNm
-			, PSCDI.SYS_MOD_ID AS sysModId
-			, PSCDI.SYS_MOD_DTM AS sysModDtm
-		FROM  	PR_STD_CTG_DISP_INFO PSCDI
-				JOIN PR_DISP_CTG_BASE PDCB ON PSCDI.DISP_CTG_NO = PDCB.DISP_CTG_NO
-				JOIN CC_SITE_BASE CSB ON PSCDI.SITE_NO = CSB.SITE_NO
-				JOIN PR_DPML_BASE PDB ON PSCDI.DPML_NO = PDB.DPML_NO
-		WHERE
-			PSCDI.STD_CTG_NO = #{stdCtgNo}
-			AND PSCDI.DEL_YN = 'N'
-		ORDER BY PSCDI.SITE_NO, PSCDI.DPML_NO, PSCDI.REP_CTG_YN DESC, PSCDI.DISP_CTG_NO
+    <!-- 연결 카테고리 목록 조회 -->
+    <select id="selectConnectList" parameterType="com.aas.display.domain.model.StandardDisplayCategoryConnectQueryParam" 
+            resultType="com.aas.display.domain.entity.PrStdCtgDispInfo">
+        /* StandardDisplayCategoryConnectQueryRepository.selectConnectList */
+        SELECT 
+            PSCDI.STD_CTG_NO,
+            PSCDI.DISP_CTG_NO,
+            PDCBM.DISP_CTG_NM,
+            PSCDI.REP_CTG_YN,
+            PSCDI.SITE_NO,
+            CSB.SITE_NM,
+            PSCDI.DPML_NO,
+            PDB.DPML_NM,
+            PSCDI.USE_YN,
+            PSCDI.DEL_YN,
+            PSCDI.SYS_REG_ID,
+            PSCDI.SYS_REG_DTM,
+            PSCDI.SYS_MOD_ID,
+            PSCDI.SYS_MOD_DTM
+        FROM PR_STD_CTG_DISP_INFO PSCDI
+        INNER JOIN PR_DISP_CTG_BASE_ML PDCBM ON PSCDI.DISP_CTG_NO = PDCBM.DISP_CTG_NO AND PDCBM.LANG_CD = 'ko'
+        INNER JOIN CC_SITE_BASE CSB ON PSCDI.SITE_NO = CSB.SITE_NO
+        INNER JOIN PR_DPML_BASE PDB ON PSCDI.DPML_NO = PDB.DPML_NO
+        WHERE PSCDI.STD_CTG_NO = #{stdCtgNo}
+          AND PSCDI.DEL_YN = 'N'
+        ORDER BY PSCDI.REP_CTG_YN DESC, PSCDI.SYS_MOD_DTM DESC
     </select>
 
 </mapper>

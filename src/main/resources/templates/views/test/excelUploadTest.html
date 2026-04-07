@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layout/default}">
+
+<head>
+    <title>엑셀 시트생성 및 업로드 테스트</title>
+    <th:block layout:fragment="head">
+        <!-- zTree CSS -->
+        <link rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/zTree.v3/3.5.40/css/zTreeStyle/zTreeStyle.min.css">
+        <style>
+            :root {
+                --primary-color: #3b82f6;
+                --bg-color: #f1f5f9;
+                --border-color: #e2e8f0;
+                --header-bg: #f8fafc;
+            }
+
+            body {
+                background-color: var(--bg-color);
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                overflow-x: hidden;
+            }
+
+            .content-container {
+                display: flex;
+                gap: 20px;
+                padding: 20px;
+                align-items: flex-start;
+                min-height: 850px;
+            }
+
+            /* --- Tree Panel Styling (Restored Premium) --- */
+            .tree-panel {
+                width: 350px;
+                min-width: 350px;
+                background: #fff;
+                border: 1px solid var(--border-color);
+                border-radius: 12px;
+                height: 900px;
+                display: flex;
+                flex-direction: column;
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+                overflow: hidden;
+            }
+
+            .panel-header {
+                padding: 18px 20px;
+                border-bottom: 1px solid #f1f5f9;
+                background: linear-gradient(to right, #ffffff, #f8fafc);
+                font-weight: 700;
+                color: #1e293b;
+            }
+
+            .ztree-wrap {
+                flex: 1;
+                overflow: auto;
+                padding: 10px 15px;
+            }
+
+            /* Premium ZTree Skin - Overriding standard image sprites */
+            .ztree * {
+                font-family: 'Inter', 'Outfit', sans-serif !important;
+                font-size: 13.5px !important;
+                padding: 0;
+                margin: 0;
+            }
+
+            .ztree li {
+                padding: 2px 0;
+                background: none !important;
+            }
+
+            .ztree li a {
+                height: 38px !important;
+                padding: 6px 10px !important;
+                color: #475569 !important;
+                border-radius: 8px;
+                display: inline-flex !important;
+                align-items: center;
+                transition: all 0.2s ease;
+                border: none !important;
+            }
+
+            .ztree li a:hover {
+                background-color: #f1f5f9 !important;
+                color: #2563eb !important;
+                transform: translateX(2px);
+            }
+
+            .ztree li a.curSelectedNode {
+                background-color: #eff6ff !important;
+                color: #2563eb !important;
+                font-weight: 700 !important;
+                box-shadow: inset 3px 0 0 #2563eb;
+            }
+
+            /* Button/Icon Removal & Replacement */
+            .ztree li span.button {
+                background-image: none !important;
+                background: none !important;
+                width: 22px;
+                height: 22px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                vertical-align: middle;
+            }
+
+            .ztree li span.button.switch {
+                cursor: pointer;
+                margin-right: 4px;
+            }
+
+            /* Arrow indicators */
+            .ztree li span.button.root_open::before,
+            .ztree li span.button.roots_open::before,
+            .ztree li span.button.center_open::before,
+            .ztree li span.button.bottom_open::before {
+                content: '▼';
+                font-size: 11px;
+                color: #64748b;
+            }
+
+            .ztree li span.button.root_close::before,
+            .ztree li span.button.roots_close::before,
+            .ztree li span.button.center_close::before,
+            .ztree li span.button.bottom_close::before {
+                content: '▶';
+                font-size: 11px;
+                color: #64748b;
+            }
+
+            /* Icon Overrides */
+            .ztree li span.button.ico_open::before {
+                content: '📂';
+                margin-right: 8px;
+                font-size: 18px;
+            }
+
+            .ztree li span.button.ico_close::before {
+                content: '📁';
+                margin-right: 8px;
+                font-size: 18px;
+            }
+
+            .ztree li span.button.ico_docu::before {
+                content: '📄';
+                margin-right: 8px;
+                font-size: 17px;
+                opacity: 0.7;
+            }
+
+            /* --- Other UI Elements --- */
+            .details-panel {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                gap: 20px;
+                min-width: 0;
+            }
+
+            .card {
+                background: white;
+                padding: 30px;
+                border-radius: 12px;
+                border: 1px solid var(--border-color);
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            }
+
+            .info-box {
+                background: #f8fafc;
+                padding: 20px;
+                border-radius: 8px;
+                border: 1px solid #f1f5f9;
+                margin-bottom: 20px;
+            }
+
+            .grid-container {
+                width: 100%;
+                height: 260px;
+                border: 1px solid #e2e8f0;
+                border-radius: 10px;
+                margin-top: 10px;
+                overflow: hidden;
+            }
+
+            .btn-large {
+                width: 100%;
+                height: 50px;
+                background: #2563eb;
+                color: white;
+                border: none;
+                border-radius: 8px;
+                font-weight: 700;
+                cursor: pointer;
+                transition: background 0.2s;
+            }
+
+            .btn-large:hover {
+                background: #1d4ed8;
+            }
+        </style>
+        <!-- AUIGrid Style -->
+        <link rel="stylesheet" th:href="@{/js/AUIGrid/AUIGrid_style.css}">
+    </th:block>
+</head>
+
+<body>
+    <div layout:fragment="content">
+        <header style="padding: 20px 0 0 20px;">
+            <h1 style="font-size: 1.5rem; font-weight: 800;">표준분류 기반 엑셀 통합 관리 📊</h1>
+        </header>
+
+        <div class="content-container">
+            <!-- Left Tree Area -->
+            <div class="tree-panel">
+                <div class="panel-header">표준카테고리 조회</div>
+                <div class="ztree-wrap">
+                    <ul id="stdCategoryTree" class="ztree"></ul>
+                </div>
+            </div>
+
+            <!-- Right Content Area -->
+            <div class="details-panel">
+                <div class="card">
+                    <h3 style="margin-bottom: 20px;"><i class="fa-solid fa-circle-info"></i> 선택된 분류 정보</h3>
+                    <div class="info-box">
+                        <p><strong>분류 번호:</strong> <span id="txtSelectedCtgNo"
+                                style="color: #2563eb; font-weight: 700;">-</span></p>
+                        <p><strong>분류 명칭:</strong> <span id="txtSelectedCtgNm">좌측 트리에서 최종 단계를 선택해 주세요.</span></p>
+                    </div>
+
+                    <button type="button" id="btnCreateExcel" class="btn-large" style="margin-bottom: 10px;">엑셀 템플릿 파일
+                        생성</button>
+                    <button type="button" id="btnDownloadCode" class="btn-large"
+                        style="margin-bottom: 10px; background: #6366f1;">공통 코드 미리보기 엑셀 다운로드</button>
+                    <button type="button" id="btnDownloadFormulaExcel" class="btn-large"
+                        style="margin-bottom: 30px; background: #10b981;">수식 적용 옵션 생성기 다운로드</button>
+
+                    <h4 style="font-size: 13px; font-weight: 700; color: #64748b; margin-bottom: 8px;">(1) 실시간 속성 정보
+                    </h4>
+                    <div id="attrInfoGrid" class="grid-container"></div>
+
+                    <div style="margin-top: 20px;">
+                        <h4 style="font-size: 13px; font-weight: 700; color: #64748b; margin-bottom: 8px;">(2) 실시간 고시 정보
+                        </h4>
+                        <div id="notiInfoGrid" class="grid-container"></div>
+                    </div>
+
+                    <!-- Upload & Preview Section -->
+                    <div style="margin-top: 40px; border-top: 2px dashed #e2e8f0; padding-top: 30px;">
+                        <h3 style="color: #10b981; font-weight: 800; margin-bottom: 20px;">엑셀 데이터 분석 프리뷰</h3>
+                        <div
+                            style="display: flex; gap: 10px; margin-bottom: 20px; background: #f0fdf4; padding: 20px; border-radius: 8px; border: 1px solid #dcfce7;">
+                            <input type="file" id="excelFile" accept=".xlsx, .xls" style="flex:1;">
+                            <button type="button" id="btnUploadExcel"
+                                style="background:#10b981; color:white; border:none; padding: 0 25px; border-radius: 4px; font-weight: 700; cursor:pointer;">데이터
+                                분석</button>
+                        </div>
+                        <div id="previewAttrGrid" class="grid-container" style="height: 350px;"></div>
+                        <div id="previewNotiGrid" class="grid-container" style="height: 350px; margin-top: 20px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <th:block layout:fragment="script">
+        <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+        <script th:src="@{/js/AUIGrid/AUIGridLicense.js}"></script>
+        <script th:src="@{/js/AUIGrid/AUIGrid.js}"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/zTree.v3/3.5.40/js/jquery.ztree.all.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+        <script th:inline="javascript">
+            var ExcelTest = {
+                zTreeObj: null,
+                init: function () {
+                    // 과거 성공의 핵심: jQuery 호환성 체크
+                    if (window.$ && !$.browser) {
+                        $.browser = { msie: false, version: 0 };
+                    }
+                    this.initGrid();
+                    this.loadTree();
+                    this.bindEvents();
+                },
+                initGrid: function () {
+                    var gridProps = { showRowNumColumn: true, headerHeight: 34, rowHeight: 34 };
+                    this.attrGridId = AUIGrid.create("#attrInfoGrid", [
+                        { dataField: "attNm", headerText: "속성명", width: "60%" },
+                        { dataField: "attCd", headerText: "속성코드", width: "40%" }
+                    ], gridProps);
+                    this.notiGridId = AUIGrid.create("#notiInfoGrid", [
+                        { dataField: "notiItemNm", headerText: "고시명칭", width: "60%" },
+                        { dataField: "goodsNotiItemCd", headerText: "코드", width: "40%" }
+                    ], gridProps);
+                    this.previewAttrGridId = AUIGrid.create("#previewAttrGrid", [], gridProps);
+                    this.previewNotiGridId = AUIGrid.create("#previewNotiGrid", [], gridProps);
+                },
+                loadTree: function () {
+                    var _this = this;
+                    var setting = {
+                        data: {
+                            simpleData: {
+                                enable: true,
+                                idKey: "stdCtgNo",
+                                pIdKey: "uprStdCtgNo",
+                                rootPId: null // 과거 성공 모델의 정답
+                            },
+                            key: { name: "stdCtgNm" }
+                        },
+                        callback: {
+                            onClick: function (e, tid, node) {
+                                if (node.leafCtgYn === 'Y') {
+                                    _this.selectedStdCtgNo = node.stdCtgNo;
+                                    $("#txtSelectedCtgNo").text(node.stdCtgNo);
+                                    $("#txtSelectedCtgNm").text(node.stdCtgNm);
+                                    _this.loadGridData(node.stdCtgNo);
+                                }
+                            }
+                        }
+                    };
+
+                    axios.get("/api/v1/display/standardCategoryMgmt/getStandardCategoryMgmt.do")
+                        .then(function (res) {
+                            if (res.data && res.data.success) {
+                                // 과거 성공 모델의 데이터 처리 로직 복제
+                                var treeData = res.data.data.map(function (item) {
+                                    return {
+                                        ...item,
+                                        stdCtgNo: String(item.stdCtgNo),
+                                        uprStdCtgNo: (item.uprStdCtgNo && item.uprStdCtgNo !== '0') ? String(item.uprStdCtgNo) : null,
+                                        isParent: (item.leafCtgYn === "N")
+                                    };
+                                });
+                                _this.zTreeObj = $.fn.zTree.init($("#stdCategoryTree"), setting, treeData);
+                                console.log("Tree Loaded Successfully.");
+                            }
+                        });
+                },
+                loadGridData: function (no) {
+                    var _this = this;
+                    axios.get("/api/v1/display/standardCategoryMgmt/getStandardCategoryGoodsAttrList.do", { params: { stdCtgNo: no, langCd: 'ko' } })
+                        .then(function (res) { AUIGrid.setGridData(_this.attrGridId, res.data.data); });
+                    axios.get("/test/excel/getNotiList.do", { params: { stdCtgNo: no } })
+                        .then(function (res) { AUIGrid.setGridData(_this.notiGridId, res.data); });
+                },
+                bindEvents: function () {
+                    var _this = this;
+                    console.log("ExcelTest Script V3 (Double-Lock) Loaded.");
+
+                    // 엑셀 템플릿 생성 버튼 (type="button" 미반영 대비 이중 잠금)
+                    $("#btnCreateExcel").off("click").on("click", function (e) {
+                        e.preventDefault(); e.stopPropagation();
+                        if (!_this.selectedStdCtgNo) {
+                            alert("분류 선택 필수");
+                            return false;
+                        }
+
+                        var url = "/test/excel/downloadTemplateTest.do?stdCtgNo=" + _this.selectedStdCtgNo;
+                        var link = document.createElement('a');
+                        link.href = url;
+                        link.style.display = 'none';
+                        document.body.appendChild(link);
+                        link.click();
+                        setTimeout(function () { document.body.removeChild(link); }, 100);
+                    });
+
+                    // 공통 코드 미리보기 다운로드 버튼
+                    $("#btnDownloadCode").off("click").on("click", function (e) {
+                        e.preventDefault(); e.stopPropagation();
+                        var url = "/test/excel/downloadCommonCode.do";
+                        var link = document.createElement('a');
+                        link.href = url;
+                        link.style.display = 'none';
+                        document.body.appendChild(link);
+                        link.click();
+                        setTimeout(function () { document.body.removeChild(link); }, 100);
+                    });
+
+                    // 수식 적용 옵션 생성기 다운로드 버튼
+                    $("#btnDownloadFormulaExcel").off("click").on("click", function (e) {
+                        e.preventDefault(); e.stopPropagation();
+                        var url = "/test/excel/downloadFormulaExcel.do";
+                        var link = document.createElement('a');
+                        link.href = url;
+                        link.style.display = 'none';
+                        document.body.appendChild(link);
+                        link.click();
+                        setTimeout(function () { document.body.removeChild(link); }, 100);
+                    });
+
+                    // 엑셀 업로드 분석 버튼
+                    $("#btnUploadExcel").off("click").on("click", function (e) {
+                        console.log("11");
+                        e.preventDefault(); e.stopPropagation();
+                        var file = $("#excelFile")[0].files[0];
+                        if (!file) {
+                            alert("파일 선택 필수");
+                            return false;
+                        }
+                        var fd = new FormData();
+                        fd.append("file", file);
+                        axios.post("/test/excel/uploadExcelPreview.do", fd, { headers: { 'Content-Type': 'multipart/form-data' } })
+                            .then(function (res) {
+                                if (res.data.success) {
+                                    _this.updateDynamicGrid(_this.previewAttrGridId, res.data.attrData);
+                                    _this.updateDynamicGrid(_this.previewNotiGridId, res.data.notiData);
+                                } else {
+                                    alert(res.data.message || "분석 실패");
+                                }
+                            });
+                    });
+                },
+                updateDynamicGrid: function (gridId, data) {
+                    if (!data || !data.headers) return;
+                    var layout = [{ dataField: "TEMP_ID", headerText: "연결 ID", width: 100 }];
+                    for (var i = 1; i < data.headers.length; i++) {
+                        layout.push({ dataField: data.codes[i], headerText: data.headers[i], width: 150 });
+                    }
+                    AUIGrid.changeColumnLayout(gridId, layout);
+                    AUIGrid.setGridData(gridId, data.rows);
+                }
+            };
+            $(document).ready(function () { ExcelTest.init(); });
+        </script>
+    </th:block>
+</body>
+
+</html>

@@ -1,50 +1,75 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<!--
-    네임스페이스는 Domain 계층의 CommandRepository 인터페이스와 1:1 매핑하거나,
-    혹은 Infrastructure 계층에서 구현한 MyBatisDao 인터페이스와 매핑합니다.
--->
 <mapper namespace="com.aas.display.domain.repository.StandardDisplayCategoryConnectCommandRepository">
-
-    <!-- 💡 주의: CUD 로직 수행 시 Parameter는 단일 맵이나 컬렉션(List) 또는 Command 객체를 사용해야 합니다 -->
 
     <!-- 연결 카테고리 신규 저장 -->
     <insert id="insertConnectList" parameterType="java.util.List">
         /* StandardDisplayCategoryConnectCommandRepository.insertConnectList */
         <foreach collection="list" item="item" separator=";">
             INSERT INTO PR_STD_CTG_DISP_INFO (
-                DISP_CTG_NO,
                 STD_CTG_NO,
-                DISP_YN
-                /* SYS_MOD_ID, SYS_MOD_DTM 등 시스템 공통 필드는 AOP/Interceptor에서 처리한다고 가정 */
+                DISP_CTG_NO,
+                REP_CTG_YN,
+                SITE_NO,
+                DPML_NO,
+                USE_YN,
+                DEL_YN,
+                SYS_REG_ID,
+                SYS_REG_DTM,
+                SYS_MOD_ID,
+                SYS_MOD_DTM
             ) VALUES (
-                #{item.dispCtgNo},
                 #{item.stdCtgNo},
-                #{item.dispYn}
+                #{item.dispCtgNo},
+                #{item.repCtgYn},
+                #{item.siteNo},
+                #{item.dpmlNo},
+                #{item.useYn},
+                'N',
+                #{item.sysRegId},
+                NOW(),
+                #{item.sysModId},
+                NOW()
             )
+            ON CONFLICT (STD_CTG_NO, DISP_CTG_NO)
+            DO UPDATE SET
+                REP_CTG_YN = EXCLUDED.REP_CTG_YN,
+                USE_YN = EXCLUDED.USE_YN,
+                DEL_YN = 'N',
+                SYS_MOD_ID = EXCLUDED.SYS_MOD_ID,
+                SYS_MOD_DTM = NOW()
         </foreach>
     </insert>
 
-    <!-- 연결 카테고리 정보 수정 (전시 여부 등) -->
+    <!-- 연결 카테고리 정보 수정 -->
     <update id="updateConnectList" parameterType="java.util.List">
         /* StandardDisplayCategoryConnectCommandRepository.updateConnectList */
         <foreach collection="list" item="item" separator=";">
             UPDATE PR_STD_CTG_DISP_INFO
-            SET DISP_YN = #{item.dispYn}
-            WHERE DISP_CTG_NO = #{item.dispCtgNo}
-              AND STD_CTG_NO = #{item.stdCtgNo}
+            SET 
+                REP_CTG_YN = #{item.repCtgYn},
+                USE_YN = #{item.useYn},
+                DEL_YN = 'N',
+                SYS_MOD_ID = #{item.sysModId},
+                SYS_MOD_DTM = NOW()
+            WHERE STD_CTG_NO = #{item.stdCtgNo}
+              AND DISP_CTG_NO = #{item.dispCtgNo}
         </foreach>
     </update>
 
-    <!-- 연결 카테고리 맵핑 삭제 -->
-    <delete id="deleteConnectList" parameterType="java.util.List">
+    <!-- 연결 카테고리 맵핑 삭제 (논리 삭제) -->
+    <update id="deleteConnectList" parameterType="java.util.List">
         /* StandardDisplayCategoryConnectCommandRepository.deleteConnectList */
         <foreach collection="list" item="item" separator=";">
-            DELETE FROM PR_STD_CTG_DISP_INFO
-            WHERE DISP_CTG_NO = #{item.dispCtgNo}
-              AND STD_CTG_NO = #{item.stdCtgNo}
+            UPDATE PR_STD_CTG_DISP_INFO
+            SET 
+                DEL_YN = 'Y',
+                SYS_MOD_ID = #{item.sysModId},
+                SYS_MOD_DTM = NOW()
+            WHERE STD_CTG_NO = #{item.stdCtgNo}
+              AND DISP_CTG_NO = #{item.dispCtgNo}
         </foreach>
-    </delete>
+    </update>
 
 </mapper>

@@ -1,69 +1,325 @@
 <!DOCTYPE html>
-<html lang="ko"
-      xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+
 <head>
     <meta charset="UTF-8">
     <title>Popup - MigProject</title>
-    
+
     <!-- CSS references -->
     <link rel="stylesheet" th:href="@{/css/index.css}">
     <link rel="stylesheet" th:href="@{/js/AUIGrid/AUIGrid_style.css}">
-    
+
     <style>
         body {
             background-color: #fff;
             padding: 20px;
             overflow-x: hidden;
+            font-family: 'Inter', 'Outfit', sans-serif;
         }
-        .title-area h1 {
-            font-size: 18px;
-            font-weight: 700;
-            color: #1e293b;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #3b82f6;
+
+        .header {
+            margin-bottom: 25px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #f1f5f9;
+            position: relative;
         }
-        .search-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 15px;
+
+        .header .title {
+            font-size: 20px;
+            font-weight: 800;
+            color: #0f172a;
+            letter-spacing: -0.025em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
-        .search-table td {
-            padding: 10px;
-            border: 1px solid #e2e8f0;
+
+        .header .title::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 60px;
+            height: 2px;
+            background: #3b82f6;
         }
-        .search-table td.label {
-            background-color: #f8fafc;
-            font-weight: 600;
-            width: 120px;
-        }
+
         .form-control {
             border: 1px solid #cbd5e1;
-            padding: 6px 12px;
-            border-radius: 4px;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            transition: all 0.2s;
+            height: 32px;
+            background-color: #fff;
+            color: #1e293b;
         }
-        .w100 { width: 100%; }
+
+        .form-control:focus {
+            border-color: #3b82f6;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .w30 {
+            width: 30%;
+        }
+
+        .w20 {
+            width: 20%;
+        }
+
+        .mr5 {
+            margin-right: 5px;
+        }
+
+        .mt10 {
+            margin-top: 10px;
+        }
+
+        .ml10 {
+            margin-left: 10px;
+        }
+
+        .d-flex {
+            display: flex;
+            align-items: center;
+        }
+
         .button {
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             padding: 8px 20px;
-            border-radius: 4px;
+            height: 36px;
+            border-radius: 6px;
             text-decoration: none;
             font-weight: 600;
+            font-size: 13px;
             cursor: pointer;
             transition: all 0.2s;
+            background: #1e293b;
+            color: #fff;
+            border: 1px solid transparent;
         }
-        .button.dark { background: #1e293b; color: #fff; }
-        .button.white { background: #fff; border: 1px solid #d1d5db; color: #4b5563; }
+
+        .button:hover {
+            background: #334155;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .button#btn_popup_close {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            color: #64748b;
+        }
+
+        .button#btn_popup_close:hover {
+            background: #f8fafc;
+            color: #1e293b;
+            border-color: #cbd5e1;
+        }
+
+        /* [CORE FIX] Embedded zTree Base Styles to avoid Network Blocking */
+        .ztree * {
+            padding: 0;
+            margin: 0;
+            font-size: 13px;
+            font-family: inherit;
+        }
+
+        .ztree {
+            margin: 0;
+            padding: 10px;
+            color: #334155;
+        }
+
+        .ztree li {
+            padding: 2px 0;
+            margin: 0;
+            list-style: none;
+            line-height: 24px;
+            text-align: left;
+            white-space: nowrap;
+            outline: 0;
+            position: relative;
+            display: block;
+        }
+
+        .ztree li ul {
+            margin: 0;
+            padding: 0 0 0 18px;
+            display: block; /* Removed !important to allow zTree to toggle display: none */
+            border-left: 1px dashed #cbd5e1;
+            margin-left: 8px;
+        }
+
+        .ztree li a {
+            padding: 3px 6px;
+            margin: 0;
+            cursor: pointer;
+            height: auto;
+            color: #334155;
+            text-decoration: none;
+            display: inline-flex !important;
+            vertical-align: middle;
+            align-items: center;
+            border-radius: 4px;
+        }
+
+        .ztree li a:hover {
+            background-color: #f1f5f9;
+            text-decoration: none;
+        }
+
+        .ztree li a.curSelectedNode {
+            background-color: #eff6ff;
+            color: #2563eb;
+            font-weight: 600;
+        }
+
+        .ztree li span.button {
+            line-height: 0;
+            margin: 0;
+            width: 18px;
+            height: 18px;
+            display: inline-block;
+            vertical-align: middle;
+            border: 0 none;
+            cursor: pointer;
+            outline: none;
+            background-color: transparent;
+            background-repeat: no-repeat;
+            background-attachment: scroll;
+            background-image: none !important;
+            /* Overriding zTree sprite */
+        }
+
+        /* Custom UI Elements Order: Icon -> Checkbox -> Name (Managed via JS DOM Reorder) */
+        .ztree li span.button.switch {
+            margin-right: 4px;
+        }
+
+        .ztree li a span.button.ico_open,
+        .ztree li a span.button.ico_close,
+        .ztree li a span.button.ico_docu {
+            margin-right: 6px;
+            position: relative;
+        }
+
+        .ztree li a span.button.chk {
+            margin-right: 8px;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 4px;
+            background: #fff !important;
+            width: 16px;
+            height: 16px;
+            position: relative;
+        }
+
+        /* Arrows & Line Indicators */
+        .ztree li span.button.roots_open::before,
+        .ztree li span.button.center_open::before,
+        .ztree li span.button.bottom_open::before {
+            content: '▾';
+            color: #94a3b8;
+            font-size: 14px;
+            position: relative;
+            top: -1px;
+        }
+
+        .ztree li span.button.roots_close::before,
+        .ztree li span.button.center_close::before,
+        .ztree li span.button.bottom_close::before {
+            content: '▶';
+            color: #94a3b8;
+            font-size: 10px;
+            position: relative;
+            top: 0px;
+        }
+
+        /* Premium CSS Icons */
+        .ztree li a span.button.ico_open::before,
+        .ztree li a span.button.ico_close::before {
+            content: '';
+            display: block;
+            width: 15px;
+            height: 11px;
+            background: linear-gradient(to bottom, #60a5fa, #2563eb);
+            border-radius: 2px;
+            margin: 3px auto;
+        }
+
+        .ztree li a span.button.ico_docu::before {
+            content: '';
+            display: block;
+            width: 11px;
+            height: 14px;
+            border: 1.5px solid #94a3b8;
+            background: #fff;
+            border-radius: 2px;
+            margin: 2px auto;
+        }
+
+        /* Checkbox Checked State */
+        .ztree li a span.button.chk.checkbox_true_full::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #2563eb;
+            border-radius: 3px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z'/%3E%3C/svg%3E");
+            background-size: 11px;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        .grid-wrapper {
+            margin-top: 20px;
+            height: calc(100vh - 200px);
+            overflow: auto;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 10px;
+            background: #fff;
+        }
+
+        .popup-btn-area {
+            position: relative;
+            z-index: 9999; /* Ensure buttons are always on top and clickable */
+            margin-top: 0;
+            padding: 15px 0;
+            background-color: #fff; /* Opaque background to hide tree scrolling behind */
+            text-align: center;
+            border-top: 1px solid #f1f5f9;
+        }
     </style>
 </head>
+
 <body>
     <div class="popup-wrapper">
         <!-- Fragment for Title Area -->
         <th:block layout:fragment="popup-title-area" />
-        
+
         <!-- Fragment for Search Area -->
         <th:block layout:fragment="popup-search-area" />
+
+        <!-- Fragment for Search Button Area -->
+        <th:block layout:fragment="popup-search-button-area" />
+
+        <!-- Fragment for List Area (Grid) -->
+        <div class="grid-wrapper">
+            <th:block layout:fragment="popup-List-area" />
+        </div>
+
+        <!-- Fragment for List Button Area -->
+        <div class="popup-btn-area">
+            <th:block layout:fragment="popup-List-button-area" />
+        </div>
     </div>
 
     <!-- JS Libs -->
@@ -71,8 +327,10 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script th:src="@{/js/AUIGrid/AUIGridLicense.js}"></script>
     <script th:src="@{/js/AUIGrid/AUIGrid.js}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/zTree.v3/3.5.40/js/jquery.ztree.all.min.js"></script>
 
     <!-- Additional Script Fragment -->
     <th:block layout:fragment="add-script" />
 </body>
+
 </html>

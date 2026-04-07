@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ko-KR"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<body>
+<th:block layout:fragment="popup-title">
+    <div class="header">
+        <div class="title" th:text="${title}">Popup Title</div>
+    </div>
+</th:block>
+
+<th:block layout:fragment="realgrid-popup-title">
+    <div class="win-popup" style="padding: 20px 20px 0px 20px;">
+        <div class="header">
+            <div style="color: #222; display: inline-block; font-size: 13px; font-weight: bold;" th:text="${title}">Popup Title</div>
+        </div>
+    </div>
+</th:block>
+
+<th:block layout:fragment="multiLanguage-popup-title">
+    <div class="header">
+    	<div class="title" th:text="${title}">Popup Title</div>
+        <!-- Multi-language selection removed in migration -->
+    </div>
+</th:block>
+</body>
+</html>

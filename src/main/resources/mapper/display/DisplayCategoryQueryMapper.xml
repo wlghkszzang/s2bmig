@@ -5,34 +5,79 @@
 
     <select id="getCategoryTreeList" parameterType="com.aas.display.domain.repository.query.param.DisplayCategoryQueryParam" resultType="com.aas.display.domain.repository.query.result.DisplayCategoryQueryResult">
         /* DisplayCategoryQueryMyBatisDao.getCategoryTreeList */
+        WITH RECURSIVE CATEGORY_TREE AS (
+            -- Root Nodes
+            SELECT 
+                PDCB.DISP_CTG_NO
+                , PDCBM.DISP_CTG_NM
+                , PDCB.DISP_SEQ
+                , PDCB.UPR_DISP_CTG_NO
+                , PDCB.LRG_CTG_NO
+                , PDCB.MID_CTG_NO
+                , PDCB.SML_CTG_NO
+                , PDCB.THN_CTG_NO
+                , PDCB.SITE_NO
+                , CSB.SITE_NM
+                , PDCB.DPML_NO
+                , PDB.DPML_NM
+                , PDCB.LEAF_YN
+                , PDCB.USE_YN
+                , CAST(PDCBM.DISP_CTG_NM AS TEXT) AS HIERARCHY_TEXT
+            FROM PR_DISP_CTG_BASE PDCB
+            INNER JOIN PR_DISP_CTG_BASE_ML PDCBM ON PDCB.DISP_CTG_NO = PDCBM.DISP_CTG_NO AND PDCBM.LANG_CD = #{langCd}
+            INNER JOIN CC_SITE_BASE CSB ON PDCB.SITE_NO = CSB.SITE_NO
+            INNER JOIN PR_DPML_BASE PDB ON PDCB.DPML_NO = PDB.DPML_NO
+            WHERE (PDCB.UPR_DISP_CTG_NO = '0' OR PDCB.UPR_DISP_CTG_NO IS NULL)
+              AND PDCB.SITE_NO = #{siteNo}
+              AND PDCB.DPML_NO = #{dpmlNo}
+
+            UNION ALL
+
+            -- Recursive Step
+            SELECT 
+                PDCB.DISP_CTG_NO
+                , PDCBM.DISP_CTG_NM
+                , PDCB.DISP_SEQ
+                , PDCB.UPR_DISP_CTG_NO
+                , PDCB.LRG_CTG_NO
+                , PDCB.MID_CTG_NO
+                , PDCB.SML_CTG_NO
+                , PDCB.THN_CTG_NO
+                , PDCB.SITE_NO
+                , CT.SITE_NM
+                , PDCB.DPML_NO
+                , CT.DPML_NM
+                , PDCB.LEAF_YN
+                , PDCB.USE_YN
+                , CT.HIERARCHY_TEXT || ' > ' || PDCBM.DISP_CTG_NM
+            FROM PR_DISP_CTG_BASE PDCB
+            INNER JOIN PR_DISP_CTG_BASE_ML PDCBM ON PDCB.DISP_CTG_NO = PDCBM.DISP_CTG_NO AND PDCBM.LANG_CD = #{langCd}
+            INNER JOIN CATEGORY_TREE CT ON PDCB.UPR_DISP_CTG_NO = CT.DISP_CTG_NO
+        )
         SELECT 
-            PDCB.DISP_CTG_NO
-            , PDCBM.DISP_CTG_NM
-            , PDCB.DISP_SEQ
-            , PDCB.UPR_DISP_CTG_NO
-            , PDCB.LRG_CTG_NO
-            , PDCB.MID_CTG_NO
-            , PDCB.SML_CTG_NO
-            , PDCB.THN_CTG_NO
-            , PDCB.SITE_NO
-            , PDCB.DPML_NO
-            , PDCB.LEAF_YN
-            , CASE WHEN PDCB.LEAF_YN = 'Y' THEN
-                CAST ((SELECT COUNT(1) FROM PR_DISP_GOODS_INFO PDGI WHERE PDGI.DISP_CTG_NO = PDCB.DISP_CTG_NO) AS TEXT)
+            DISP_CTG_NO
+            , DISP_CTG_NM
+            , DISP_SEQ
+            , UPR_DISP_CTG_NO
+            , LRG_CTG_NO
+            , MID_CTG_NO
+            , SML_CTG_NO
+            , THN_CTG_NO
+            , SITE_NO
+            , SITE_NM
+            , DPML_NO
+            , DPML_NM
+            , LEAF_YN
+            , HIERARCHY_TEXT
+            , CASE WHEN LEAF_YN = 'Y' THEN
+                CAST ((SELECT COUNT(1) FROM PR_DISP_GOODS_INFO PDGI WHERE PDGI.DISP_CTG_NO = CATEGORY_TREE.DISP_CTG_NO) AS TEXT)
               ELSE '' END AS CAT_GOODS_CNT
-        FROM PR_DISP_CTG_BASE PDCB
-        INNER JOIN PR_DISP_CTG_BASE_ML PDCBM ON PDCB.DISP_CTG_NO = PDCBM.DISP_CTG_NO AND PDCBM.LANG_CD = #{langCd}
-        WHERE PDCB.SITE_NO = #{siteNo}
+        FROM CATEGORY_TREE
+        WHERE 1 = 1
         <if test="useYn != null and useYn != ''">
-          AND PDCB.USE_YN = #{useYn}
-          AND NOT EXISTS (
-            SELECT 1 FROM PR_DISP_CTG_BASE UPPER_PDCB 
-            WHERE UPPER_PDCB.DISP_CTG_NO IN (PDCB.LRG_CTG_NO, PDCB.MID_CTG_NO, PDCB.SML_CTG_NO, PDCB.THN_CTG_NO) 
-            AND UPPER_PDCB.USE_YN <![CDATA[ <> ]]> 'Y'
-          )
+            AND USE_YN = #{useYn}
         </if>
-        AND PDCB.DPML_NO = #{dpmlNo}
-        ORDER BY PDCB.UPR_DISP_CTG_NO, PDCB.DISP_SEQ, PDCB.SYS_MOD_DTM DESC
+        ORDER BY UPR_DISP_CTG_NO, DISP_SEQ
     </select>
 
     <select id="getCategoryDetail" parameterType="com.aas.display.domain.repository.query.param.DisplayCategoryQueryParam" resultType="com.aas.display.domain.repository.query.result.DisplayCategoryQueryResult">

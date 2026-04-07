@@ -5,6 +5,8 @@ import com.aas.display.interfaces.dto.req.StandardDisplayCategoryConnectReqDto;
 import com.aas.display.interfaces.dto.req.StandardDisplayCategoryConnectCudDto;
 import com.aas.display.interfaces.dto.rsp.StandardDisplayCategoryConnectRspDto;
 import com.aas.display.application.queryservice.StandardDisplayCategoryConnectQueryService;
+import com.aas.display.application.commandservice.StandardDisplayCategoryConnectCommandService;
+import com.aas.display.interfaces.controller.transfer.StandardDisplayCategoryConnectDtoTransfer;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -26,8 +28,8 @@ import java.util.Map;
 public class StandardDisplayCategoryConnectRestController {
 
     private final StandardDisplayCategoryConnectQueryService queryService;
-    // private final StandardDisplayCategoryConnectCommandService commandService;
-    // private final StandardDisplayCategoryConnectDtoTransfer dtoTransfer;
+    private final StandardDisplayCategoryConnectCommandService commandService;
+    private final StandardDisplayCategoryConnectDtoTransfer dtoTransfer;
 
     @Operation(summary = "연결 소전시 카테고리 목록 조회", description = "AUIGrid 용 연결된 소전시 카테고리 목록을 조회합니다.")
     @GetMapping("/getStandardDisplayCategoryConnect.do")
@@ -38,12 +40,16 @@ public class StandardDisplayCategoryConnectRestController {
         return RspDto.ok(result);
     }
 
-    @Operation(summary = "연결 소전시 카테고리 목록 저장 (CUD)", description = "AUIGrid에서 넘어온 추가/수정/삭제 목록을 한번에 저장힙니다.")
+    @Operation(summary = "연결 소전시 카테고리 목록 저장 (CUD)", description = "AUIGrid에서 넘어온 추가/수정/삭제 목록을 한번에 저장합니다.")
     @PostMapping("/saveStandardDisplayCategoryConnect.do")
-    public RspDto<Void> saveStandardDisplayCategoryConnect(
+    public RspDto<String> saveStandardDisplayCategoryConnect(
             @RequestBody Map<String, List<StandardDisplayCategoryConnectCudDto>> realGridCUD) {
         
-        // commandService.saveCategoryConnect(realGridCUD.get("create"), realGridCUD.get("update"), realGridCUD.get("delete"));
-        return RspDto.ok(null); // 원본 BaseController 메시지 "저장되었습니다" 룰은 Front-end 에 하드코딩 권장됨.
+        commandService.saveCategoryConnect(
+            realGridCUD.get("create"), 
+            realGridCUD.get("update"), 
+            realGridCUD.get("delete")
+        );
+        return RspDto.ok("저장되었습니다.");
     }
 }
