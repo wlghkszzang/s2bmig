@@ -12,12 +12,12 @@ import java.util.List;
 public interface StandardDisplayCategoryConnectAppTransfer {
     
     // Entity -> Response DTO
-    @Mapping(target = "dispYn", source = "useYn") // 호환성 유지
+    @Mapping(target = "useYn", source = "useYn") // UI에서 useYn으로 받음
     StandardDisplayCategoryConnectRspDto toRspDto(PrStdCtgDispInfo entity);
     List<StandardDisplayCategoryConnectRspDto> toRspDtoList(List<PrStdCtgDispInfo> entities);
 
     // CUD DTO -> Entity
-    @Mapping(target = "useYn", source = "dispYn") // 호환성 유지
+    @Mapping(target = "useYn", source = "useYn") // UI에서 useYn으로 전송됨
     PrStdCtgDispInfo toEntity(StandardDisplayCategoryConnectCudDto dto);
     List<PrStdCtgDispInfo> toEntityList(List<StandardDisplayCategoryConnectCudDto> dtos);
 }

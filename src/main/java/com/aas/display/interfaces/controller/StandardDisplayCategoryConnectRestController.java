@@ -35,7 +35,7 @@ public class StandardDisplayCategoryConnectRestController {
     @GetMapping("/getStandardDisplayCategoryConnect.do")
     public RspDto<List<StandardDisplayCategoryConnectRspDto>> getStandardDisplayCategoryConnect(
             StandardDisplayCategoryConnectReqDto reqDto) {
-        
+
         List<StandardDisplayCategoryConnectRspDto> result = queryService.getList(reqDto);
         return RspDto.ok(result);
     }
@@ -44,12 +44,27 @@ public class StandardDisplayCategoryConnectRestController {
     @PostMapping("/saveStandardDisplayCategoryConnect.do")
     public RspDto<String> saveStandardDisplayCategoryConnect(
             @RequestBody Map<String, List<StandardDisplayCategoryConnectCudDto>> realGridCUD) {
-        
-        commandService.saveCategoryConnect(
-            realGridCUD.get("create"), 
-            realGridCUD.get("update"), 
-            realGridCUD.get("delete")
-        );
+
+        List<StandardDisplayCategoryConnectCudDto> createList = realGridCUD.get("create");
+        List<StandardDisplayCategoryConnectCudDto> updateList = realGridCUD.get("update");
+        List<StandardDisplayCategoryConnectCudDto> deleteList = realGridCUD.get("delete");
+
+        // [임시] 시스템 필드 강제 주입 (로그인 세션 적용 전까지 ADMIN 무결성 확보)
+        if (createList != null)
+            createList.forEach(dto -> {
+                dto.setSysRegId("ADMIN");
+                dto.setSysModId("ADMIN");
+            });
+        if (updateList != null)
+            updateList.forEach(dto -> {
+                dto.setSysModId("ADMIN");
+            });
+        if (deleteList != null)
+            deleteList.forEach(dto -> {
+                dto.setSysModId("ADMIN");
+            });
+
+        commandService.saveCategoryConnect(createList, updateList, deleteList);
         return RspDto.ok("저장되었습니다.");
     }
 }
